@@ -1,0 +1,5 @@
+project_name = "quickpoll"
+aws_region   = "eu-west-1"
+environment  = "dev"
+# creator_jwt_secret = "set-via-tfvars-or-env"
+# ses_from_email     = "noreply@example.com"

@@ -1,36 +1,83 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# QuickPoll
 
-## Getting Started
+Sondages en temps réel — création sans compte, vote sécurisé, résultats live.
 
-First, run the development server:
+## Fonctionnalités V1
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Création** : choix unique, multiple (limite configurable), notation 1–5★, oui/non
+- **Personnalisation** : titre, description, options, expiration, couleur d'accent
+- **Paramètres avancés** : mot de passe, commentaires, visibilité des résultats, alias obligatoire
+- **Liens** : vote public + gestion privée (JWT, sans compte)
+- **Vote** : anti-double vote (fingerprint + hash IP), alias et commentaires optionnels
+- **Résultats** : SSE temps réel, graphiques, partage (QR, iframe, réseaux sociaux)
+- **Dashboard créateur** : stats, clôture, prolongation, duplication, export CSV, SES au 1er vote
+
+## Structure
+
+```
+quickpoll/
+├── app/                 # Next.js 16 (App Router)
+├── infrastructure/      # Terraform AWS
+├── .github/workflows/   # CI / CD
+└── docker-compose.yml   # DynamoDB Local
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Démarrage local
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# DynamoDB Local
+docker compose up dynamodb -d
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Créer les tables (AWS CLI)
+aws dynamodb create-table --endpoint-url http://localhost:8000 \
+  --table-name quickpoll-polls \
+  --attribute-definitions AttributeName=id,AttributeType=S \
+  --key-schema AttributeName=id,KeyType=HASH \
+  --billing-mode PAY_PER_REQUEST
 
-## Learn More
+aws dynamodb create-table --endpoint-url http://localhost:8000 \
+  --table-name quickpoll-votes \
+  --attribute-definitions \
+    AttributeName=pollId,AttributeType=S \
+    AttributeName=fingerprint,AttributeType=S \
+  --key-schema \
+    AttributeName=pollId,KeyType=HASH \
+    AttributeName=fingerprint,KeyType=RANGE \
+  --billing-mode PAY_PER_REQUEST
 
-To learn more about Next.js, take a look at the following resources:
+# App
+cp app/.env.example app/.env.local
+npm install --prefix app
+npm run dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Ouvrir [http://localhost:3000](http://localhost:3000).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Variables d'environnement
 
-## Deploy on Vercel
+Voir [`app/.env.example`](app/.env.example).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Variable | Description |
+|----------|-------------|
+| `CREATOR_JWT_SECRET` | Signature des liens de gestion |
+| `IP_HASH_SALT` | Sel pour le hash IP (anti-fraude) |
+| `DYNAMODB_*` | Tables et endpoint (local ou AWS) |
+| `SES_FROM_EMAIL` | Expéditeur des notifications |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Infrastructure
+
+```bash
+cd infrastructure
+terraform init
+terraform plan -var="creator_jwt_secret=..."
+```
+
+Modules : networking, ECR, ECS, DynamoDB, ALB, CloudFront, SES.
+
+## Scripts racine
+
+| Commande | Action |
+|----------|--------|
+| `npm run dev` | Lance Next.js dans `app/` |
+| `npm run build` | Build production |
+| `npm run lint` | ESLint |
