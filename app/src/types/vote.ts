@@ -12,7 +12,7 @@ export interface VotePayload {
 export interface Vote {
   pollId: string;
   voteId: string;
-  fingerprint: string;
+  voterId: string;
   type: PollType;
   optionIds?: string[];
   rating?: number;

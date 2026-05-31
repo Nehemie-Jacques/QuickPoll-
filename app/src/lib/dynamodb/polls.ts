@@ -4,7 +4,7 @@ import {
   UpdateCommand,
   DeleteCommand,
 } from "@aws-sdk/lib-dynamodb";
-import type { CreatePollInput, Poll, PollResults } from "@/types/poll";
+import type { CreatePollInput, Poll, PollResults, PollStatus } from "@/types/poll";
 import { docClient, POLLS_TABLE } from "./client";
 import { generateOptionId, generatePollId } from "@/lib/nanoid";
 
@@ -37,7 +37,8 @@ export async function createPoll(input: CreatePollInput): Promise<Poll> {
       id: generateOptionId(),
       label: o.label,
     })),
-    accentColor: input.accentColor ?? "#6366f1",
+    accentColor: input.accentColor ?? "#7C3AED",
+    status: "active",
     expiresAt: expirationToDate(input.expiration, input.customExpiresAt),
     closedAt: null,
     settings: {
@@ -48,7 +49,7 @@ export async function createPoll(input: CreatePollInput): Promise<Poll> {
       password: input.settings.password,
       notifyEmail: input.notifyEmail ?? input.settings.notifyEmail,
     },
-    voteCount: 0,
+    totalVotes: 0,
     createdAt: now,
     updatedAt: now,
   };
@@ -68,16 +69,26 @@ export async function getPoll(id: string): Promise<Poll | null> {
   const result = await docClient.send(
     new GetCommand({ TableName: POLLS_TABLE, Key: { id } }),
   );
-  return (result.Item as Poll) ?? null;
+  const item = result.Item as Poll | undefined;
+  if (!item) return null;
+  return normalizePoll(item);
 }
 
-export async function incrementVoteCount(pollId: string): Promise<number> {
+function normalizePoll(raw: Poll & { voteCount?: number }): Poll {
+  return {
+    ...raw,
+    totalVotes: raw.totalVotes ?? raw.voteCount ?? 0,
+    status: raw.status ?? "active",
+  };
+}
+
+export async function incrementTotalVotes(pollId: string): Promise<number> {
   const result = await docClient.send(
     new UpdateCommand({
       TableName: POLLS_TABLE,
       Key: { id: pollId },
       UpdateExpression:
-        "SET voteCount = if_not_exists(voteCount, :zero) + :inc, updatedAt = :now",
+        "SET totalVotes = if_not_exists(totalVotes, :zero) + :inc, updatedAt = :now",
       ExpressionAttributeValues: {
         ":inc": 1,
         ":zero": 0,
@@ -86,13 +97,21 @@ export async function incrementVoteCount(pollId: string): Promise<number> {
       ReturnValues: "UPDATED_NEW",
     }),
   );
-  return (result.Attributes?.voteCount as number) ?? 0;
+  return (result.Attributes?.totalVotes as number) ?? 0;
 }
 
 export async function updatePoll(
   id: string,
   updates: Partial<
-    Pick<Poll, "expiresAt" | "closedAt" | "settings" | "title" | "description">
+    Pick<
+      Poll,
+      | "expiresAt"
+      | "closedAt"
+      | "settings"
+      | "title"
+      | "description"
+      | "status"
+    >
   >,
 ): Promise<Poll | null> {
   const expressions: string[] = ["updatedAt = :now"];
@@ -105,6 +124,10 @@ export async function updatePoll(
   if (updates.closedAt !== undefined) {
     expressions.push("closedAt = :closedAt");
     values[":closedAt"] = updates.closedAt;
+  }
+  if (updates.status !== undefined) {
+    expressions.push("#status = :status");
+    values[":status"] = updates.status;
   }
   if (updates.settings !== undefined) {
     expressions.push("settings = :settings");
@@ -124,11 +147,21 @@ export async function updatePoll(
       TableName: POLLS_TABLE,
       Key: { id },
       UpdateExpression: `SET ${expressions.join(", ")}`,
+      ExpressionAttributeNames: updates.status
+        ? { "#status": "status" }
+        : undefined,
       ExpressionAttributeValues: values,
     }),
   );
 
   return getPoll(id);
+}
+
+export async function closePoll(id: string): Promise<Poll | null> {
+  return updatePoll(id, {
+    status: "closed",
+    closedAt: new Date().toISOString(),
+  });
 }
 
 export async function deletePoll(id: string): Promise<void> {
@@ -176,6 +209,9 @@ export async function getPollResults(pollId: string): Promise<PollResults> {
       alias: v.alias,
       text: v.comment!,
       createdAt: v.createdAt,
+      optionIds: v.optionIds,
+      rating: v.rating,
+      yesNo: v.yesNo,
     }))
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 

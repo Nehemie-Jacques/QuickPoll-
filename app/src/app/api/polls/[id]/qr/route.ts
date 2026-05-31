@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getPoll } from "@/lib/dynamodb/polls";
 import { generateQrPng } from "@/lib/qrcode";
-import { pollVoteUrl } from "@/lib/app-url";
+import { voteUrl } from "@/lib/urls";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -13,7 +13,7 @@ export async function GET(_request: Request, context: RouteContext) {
     return NextResponse.json({ error: "Poll not found" }, { status: 404 });
   }
 
-  const png = await generateQrPng(pollVoteUrl(id));
+  const png = await generateQrPng(voteUrl(id));
 
   return new NextResponse(new Uint8Array(png), {
     headers: {

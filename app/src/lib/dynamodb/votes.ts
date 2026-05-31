@@ -11,12 +11,12 @@ const voteIdGen = customAlphabet(
 
 export async function hasVoted(
   pollId: string,
-  fingerprint: string,
+  voterId: string,
 ): Promise<boolean> {
   const result = await docClient.send(
     new GetCommand({
       TableName: VOTES_TABLE,
-      Key: { pollId, fingerprint },
+      Key: { pollId, voterId },
     }),
   );
   return !!result.Item;
@@ -24,13 +24,13 @@ export async function hasVoted(
 
 export async function createVote(
   poll: Poll,
-  fingerprint: string,
+  voterId: string,
   payload: VotePayload,
 ): Promise<Vote> {
   const vote: Vote = {
     pollId: poll.id,
     voteId: voteIdGen(),
-    fingerprint,
+    voterId,
     type: poll.type,
     optionIds: payload.optionIds,
     rating: payload.rating,
@@ -44,7 +44,7 @@ export async function createVote(
     new PutCommand({
       TableName: VOTES_TABLE,
       Item: vote,
-      ConditionExpression: "attribute_not_exists(fingerprint)",
+      ConditionExpression: "attribute_not_exists(voterId)",
     }),
   );
 

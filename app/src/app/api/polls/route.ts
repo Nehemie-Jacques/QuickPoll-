@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { createPoll } from "@/lib/dynamodb/polls";
 import { signCreatorToken } from "@/lib/creator-token";
-import { pollManageUrl, pollVoteUrl } from "@/lib/app-url";
+import { serializePoll } from "@/lib/api/poll-presenter";
+import { manageUrl, voteUrl } from "@/lib/urls";
 import type { CreatePollInput } from "@/types/poll";
 
 export async function POST(request: Request) {
@@ -16,16 +17,23 @@ export async function POST(request: Request) {
     }
 
     const poll = await createPoll(body);
-    const token = await signCreatorToken(poll.id);
+    const creatorToken = await signCreatorToken(poll.id);
 
-    return NextResponse.json({
-      poll,
-      voteUrl: pollVoteUrl(poll.id),
-      manageUrl: pollManageUrl(poll.id, token),
-      manageToken: token,
-    });
+    return NextResponse.json(
+      {
+        pollId: poll.id,
+        creatorToken,
+        voteUrl: voteUrl(poll.id),
+        manageUrl: manageUrl(poll.id, creatorToken),
+        poll: serializePoll(poll),
+      },
+      { status: 201 },
+    );
   } catch (error) {
     console.error("POST /api/polls", error);
-    return NextResponse.json({ error: "Failed to create poll" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to create poll" },
+      { status: 500 },
+    );
   }
 }

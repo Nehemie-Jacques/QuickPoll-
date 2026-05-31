@@ -8,6 +8,7 @@ import {
   updatePoll,
 } from "@/lib/dynamodb/polls";
 import { listVotesByPoll } from "@/lib/dynamodb/votes";
+import { getPollResolved } from "@/lib/poll-status";
 import type { CreatePollInput } from "@/types/poll";
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -28,7 +29,7 @@ export async function GET(request: Request, context: RouteContext) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
 
-  const poll = await getPoll(id);
+  const poll = await getPollResolved(id);
   if (!poll) {
     return NextResponse.json({ error: "Poll not found" }, { status: 404 });
   }
@@ -52,6 +53,7 @@ export async function PATCH(request: Request, context: RouteContext) {
 
   if (action === "close") {
     const poll = await updatePoll(id, {
+      status: "closed",
       closedAt: new Date().toISOString(),
     });
     return NextResponse.json({ poll });
@@ -59,6 +61,7 @@ export async function PATCH(request: Request, context: RouteContext) {
 
   if (action === "extend" && body.expiresAt) {
     const poll = await updatePoll(id, {
+      status: "active",
       expiresAt: body.expiresAt,
       closedAt: null,
     });

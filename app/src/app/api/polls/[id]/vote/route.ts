@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
-import { getPoll, incrementVoteCount } from "@/lib/dynamodb/polls";
+import { incrementTotalVotes } from "@/lib/dynamodb/polls";
 import { createVote } from "@/lib/dynamodb/votes";
-import { buildVoterFingerprint, hashIp } from "@/lib/fingerprint";
+import { getPollResolved } from "@/lib/poll-status";
 import { checkVoteAllowed } from "@/lib/vote-guard";
 import { notifyFirstVote } from "@/lib/ses-notify";
-import { pollManageUrl } from "@/lib/app-url";
+import { signCreatorToken } from "@/lib/creator-token";
+import { manageUrl } from "@/lib/urls";
+import { voterIdFromRequest } from "@/lib/voter-id";
 import type { VotePayload } from "@/types/vote";
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -13,42 +15,46 @@ export async function POST(request: Request, context: RouteContext) {
   const { id } = await context.params;
 
   try {
-    const poll = await getPoll(id);
+    const poll = await getPollResolved(id);
     if (!poll) {
       return NextResponse.json({ error: "Poll not found" }, { status: 404 });
     }
 
     const body = (await request.json()) as VotePayload;
-    const ip =
-      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-      "unknown";
-    const ipHash = hashIp(ip, process.env.IP_HASH_SALT ?? "quickpoll");
-    const fingerprint = buildVoterFingerprint(
-      request.headers.get("user-agent"),
-      request.headers.get("accept-language"),
-      ipHash,
-    );
+    const voterId = voterIdFromRequest(request);
 
-    const guard = await checkVoteAllowed(poll, fingerprint, body.password);
+    const guard = await checkVoteAllowed(poll, voterId, body.password);
     if (!guard.allowed) {
       return NextResponse.json({ error: guard.reason }, { status: 403 });
     }
 
-    const vote = await createVote(poll, fingerprint, body);
-    const newCount = await incrementVoteCount(poll.id);
+    let vote;
+    try {
+      vote = await createVote(poll, voterId, body);
+    } catch (err) {
+      if (
+        err &&
+        typeof err === "object" &&
+        "name" in err &&
+        (err as { name: string }).name === "ConditionalCheckFailedException"
+      ) {
+        return NextResponse.json({ error: "already_voted" }, { status: 403 });
+      }
+      throw err;
+    }
 
-    if (newCount === 1 && poll.settings.notifyEmail) {
-      const token = await import("@/lib/creator-token").then((m) =>
-        m.signCreatorToken(poll.id),
-      );
+    const totalVotes = await incrementTotalVotes(poll.id);
+
+    if (totalVotes === 1 && poll.settings.notifyEmail) {
+      const token = await signCreatorToken(poll.id);
       notifyFirstVote(
         poll.settings.notifyEmail,
         poll.title,
-        pollManageUrl(poll.id, token),
+        manageUrl(poll.id, token),
       ).catch(console.error);
     }
 
-    return NextResponse.json({ vote, voteCount: newCount });
+    return NextResponse.json({ vote, totalVotes });
   } catch (error) {
     console.error("POST vote", error);
     return NextResponse.json({ error: "Vote failed" }, { status: 500 });

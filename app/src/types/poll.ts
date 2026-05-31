@@ -1,5 +1,7 @@
 export type PollType = "single_choice" | "multiple_choice" | "rating" | "yes_no";
 
+export type PollStatus = "active" | "closed" | "expired";
+
 export type ExpirationPreset = "1h" | "6h" | "24h" | "7d" | "custom" | "none";
 
 export interface PollOption {
@@ -23,10 +25,11 @@ export interface Poll {
   type: PollType;
   options: PollOption[];
   accentColor: string;
+  status: PollStatus;
   expiresAt: string | null;
   closedAt: string | null;
   settings: PollSettings;
-  voteCount: number;
+  totalVotes: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -43,17 +46,18 @@ export interface CreatePollInput {
   notifyEmail?: string;
 }
 
-export interface CreatePollResponse {
-  poll: Poll;
-  voteUrl: string;
-  manageUrl: string;
-}
-
 export interface PollResults {
   pollId: string;
   totalVotes: number;
   breakdown: Record<string, number>;
   ratingAverage?: number;
   activity: { timestamp: string; count: number }[];
-  comments: { alias?: string; text: string; createdAt: string }[];
+  comments: {
+    alias?: string;
+    text: string;
+    createdAt: string;
+    optionIds?: string[];
+    rating?: number;
+    yesNo?: boolean;
+  }[];
 }
