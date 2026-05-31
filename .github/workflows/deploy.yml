@@ -25,15 +25,30 @@ jobs:
         id: ecr
 
       - name: Build and push image
-        working-directory: app
         env:
           ECR_REGISTRY: ${{ steps.ecr.outputs.registry }}
-          ECR_REPOSITORY: quickpoll-prod-app
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_NAME }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker build -t "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" -t "$ECR_REGISTRY/$ECR_REPOSITORY:latest" ./app
+          docker push "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          docker push "$ECR_REGISTRY/$ECR_REPOSITORY:latest"
 
-      - name: Deploy ECS service
+      - name: Force ECS deployment
+        env:
+          CLUSTER: ${{ secrets.ECS_CLUSTER_NAME }}
+          SERVICE: ${{ secrets.ECS_SERVICE_NAME }}
         run: |
-          echo "Update ECS service with new image tag — configure per environment"
+          aws ecs update-service \
+            --cluster "$CLUSTER" \
+            --service "$SERVICE" \
+            --force-new-deployment
+
+      - name: Wait for service stability
+        env:
+          CLUSTER: ${{ secrets.ECS_CLUSTER_NAME }}
+          SERVICE: ${{ secrets.ECS_SERVICE_NAME }}
+        run: |
+          aws ecs wait services-stable \
+            --cluster "$CLUSTER" \
+            --services "$SERVICE"
