@@ -1,25 +1,44 @@
 services:
-  dynamodb:
+  app:
+    build:
+      context: ./app
+      target: deps          # Utilise deps, pas runner (hot reload)
+    volumes:
+      - ./app:/app
+      - /app/node_modules
+      - /app/.next
+    ports:
+      - "3000:3000"
+    command: npm run dev
+    environment:
+      - AWS_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=local
+      - AWS_SECRET_ACCESS_KEY=local
+      - DYNAMODB_ENDPOINT=http://dynamodb-local:8000
+      - DYNAMODB_POLLS_TABLE=quickpoll-polls
+      - DYNAMODB_VOTES_TABLE=quickpoll-votes
+      - CREATOR_JWT_SECRET=dev-secret-change-in-prod-minimum-32-chars
+      - NEXT_PUBLIC_BASE_URL=http://localhost:3000
+    depends_on:
+      dynamodb-local:
+        condition: service_healthy
+
+  dynamodb-local:
     image: amazon/dynamodb-local:latest
     ports:
       - "8000:8000"
     command: ["-jar", "DynamoDBLocal.jar", "-sharedDb", "-inMemory"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/shell || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
-  app:
-    build:
-      context: ./app
-      dockerfile: Dockerfile
+  dynamodb-admin:
+    image: aaronshaf/dynamodb-admin
     ports:
-      - "3000:3000"
+      - "8001:8001"
     environment:
-      NEXT_PUBLIC_APP_URL: http://localhost:3000
-      CREATOR_JWT_SECRET: dev-secret-change-in-prod
-      IP_HASH_SALT: dev-salt
-      AWS_REGION: eu-west-1
-      DYNAMODB_ENDPOINT: http://dynamodb:8000
-      DYNAMODB_POLLS_TABLE: quickpoll-polls
-      DYNAMODB_VOTES_TABLE: quickpoll-votes
+      - DYNAMO_ENDPOINT=http://dynamodb-local:8000
     depends_on:
-      - dynamodb
-    profiles:
-      - full
+      - dynamodb-local

@@ -6,6 +6,9 @@
     "dev": "npm run dev --prefix app",
     "build": "npm run build --prefix app",
     "start": "npm run start --prefix app",
-    "lint": "npm run lint --prefix app"
+    "lint": "npm run lint --prefix app",
+    "test": "npm run test --prefix app",
+    "db:up": "docker compose up dynamodb-local -d",
+    "db:init": "./scripts/init-dynamodb-local.sh"
   }
 }

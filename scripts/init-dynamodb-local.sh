@@ -14,10 +14,10 @@ aws dynamodb create-table --endpoint-url "$ENDPOINT" \
   --table-name quickpoll-votes \
   --attribute-definitions \
     AttributeName=pollId,AttributeType=S \
-    AttributeName=fingerprint,AttributeType=S \
+    AttributeName=voterId,AttributeType=S \
   --key-schema \
     AttributeName=pollId,KeyType=HASH \
-    AttributeName=fingerprint,KeyType=RANGE \
+    AttributeName=voterId,KeyType=RANGE \
   --billing-mode PAY_PER_REQUEST \
   2>/dev/null || true
 
