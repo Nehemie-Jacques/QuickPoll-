@@ -1,5 +1,6 @@
 import { ManageDashboard } from "@/components/manage/ManageDashboard";
-import { pollVoteUrl } from "@/lib/app-url";
+import { ManageGate } from "@/components/manage/ManageGate";
+import { voteUrl } from "@/lib/urls";
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -11,14 +12,10 @@ export default async function ManagePage({ params, searchParams }: PageProps) {
   const { token } = await searchParams;
 
   if (!token) {
-    return (
-      <p className="p-6 text-center text-red-600">
-        Token de gestion manquant dans l&apos;URL
-      </p>
-    );
+    return <ManageGate />;
   }
 
   return (
-    <ManageDashboard pollId={id} token={token} voteUrl={pollVoteUrl(id)} />
+    <ManageDashboard pollId={id} token={token} voteUrl={voteUrl(id)} />
   );
 }

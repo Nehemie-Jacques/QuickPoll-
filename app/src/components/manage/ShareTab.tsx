@@ -1,26 +1,30 @@
 "use client";
 
 import { SharePanel } from "@/components/results/SharePanel";
-import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
 
-interface ShareTabProps {
+export function ShareTab({
+  pollId,
+  voteUrl,
+  exportUrl,
+}: {
   pollId: string;
   voteUrl: string;
-  token: string;
-}
-
-export function ShareTab({ pollId, voteUrl, token }: ShareTabProps) {
+  exportUrl: string;
+}) {
   return (
-    <div className="space-y-4">
-      <SharePanel pollId={pollId} voteUrl={voteUrl} />
-      <a
-        href={`/api/polls/${pollId}/export?token=${encodeURIComponent(token)}`}
-        download
-      >
-        <Button type="button" variant="secondary">
-          Exporter CSV
-        </Button>
-      </a>
+    <div className="space-y-6">
+      <Card>
+        <SharePanel pollId={pollId} voteUrl={voteUrl} exportUrl={exportUrl} />
+      </Card>
+      <Card>
+        <h3 className="mb-3 font-display font-semibold">Embed preview</h3>
+        <iframe
+          src={voteUrl}
+          title="Vote widget preview"
+          className="h-64 w-full rounded-lg border border-zinc-700 bg-zinc-950"
+        />
+      </Card>
     </div>
   );
 }

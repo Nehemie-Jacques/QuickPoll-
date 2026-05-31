@@ -1,62 +1,91 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { Input } from "@/components/ui/Input";
 import { Toggle } from "@/components/ui/Toggle";
-
-interface DangerZoneProps {
-  pollId: string;
-  token: string;
-  showResults: boolean;
-  onRefresh: () => void;
-}
+import { Modal } from "@/components/ui/Modal";
 
 export function DangerZone({
   pollId,
+  pollTitle,
   token,
   showResults,
   onRefresh,
-}: DangerZoneProps) {
+}: {
+  pollId: string;
+  pollTitle: string;
+  token: string;
+  showResults: boolean;
+  onRefresh: () => void;
+}) {
   const router = useRouter();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmText, setConfirmText] = useState("");
 
   async function patch(body: object) {
-    await fetch(`/api/polls/${pollId}/manage?token=${token}`, {
+    await fetch(`/api/polls/${pollId}/manage?token=${encodeURIComponent(token)}`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "x-manage-token": token },
       body: JSON.stringify(body),
     });
     onRefresh();
   }
 
   async function remove() {
-    if (!confirm("Supprimer définitivement ce sondage ?")) return;
-    await fetch(`/api/polls/${pollId}/manage?token=${token}`, {
+    await fetch(`/api/polls/${pollId}/manage?token=${encodeURIComponent(token)}`, {
       method: "DELETE",
+      headers: { "x-manage-token": token },
     });
     router.push("/");
   }
 
   return (
-    <Card className="space-y-4 border-red-200 dark:border-red-900">
-      <h3 className="font-semibold text-red-600">Zone de danger</h3>
-      <Toggle
-        label="Afficher les résultats avant clôture"
-        checked={showResults}
-        onCheckedChange={(v) =>
-          patch({ action: "toggle_results", showResultsBeforeClose: v })
-        }
-      />
-      <Button
-        type="button"
-        variant="secondary"
-        onClick={() => patch({ action: "duplicate" })}
+    <Card className="border-red-900/50">
+      <h3 className="font-display text-lg font-semibold text-red-400">
+        Danger Zone
+      </h3>
+      <div className="mt-4 space-y-4">
+        <Toggle
+          label="Show results before poll closes"
+          checked={showResults}
+          onCheckedChange={(v) =>
+            patch({ action: "toggle_results", showResultsBeforeClose: v })
+          }
+        />
+        <Button variant="ghost" type="button" onClick={() => patch({ action: "duplicate" })}>
+          Duplicate poll
+        </Button>
+        <Button variant="danger" type="button" onClick={() => setConfirmOpen(true)}>
+          Delete this poll permanently
+        </Button>
+      </div>
+
+      <Modal
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title="Confirm deletion"
       >
-        Dupliquer le sondage
-      </Button>
-      <Button type="button" variant="danger" onClick={remove}>
-        Supprimer le sondage
-      </Button>
+        <p className="text-sm text-zinc-400">
+          Type <strong className="text-zinc-200">{pollTitle}</strong> to confirm.
+        </p>
+        <Input
+          className="mt-4"
+          value={confirmText}
+          onChange={(e) => setConfirmText(e.target.value)}
+          placeholder={pollTitle}
+        />
+        <Button
+          variant="danger"
+          className="mt-4 w-full"
+          disabled={confirmText !== pollTitle}
+          onClick={remove}
+        >
+          Delete forever
+        </Button>
+      </Modal>
     </Card>
   );
 }

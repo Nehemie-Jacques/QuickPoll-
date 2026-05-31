@@ -1,44 +1,82 @@
 "use client";
 
 import type { Poll, PollResults } from "@/types/poll";
-import { StatsRow } from "@/components/results/StatsRow";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
 import { ResultsBreakdown } from "@/components/results/ResultsBreakdown";
 import { ActivityChart } from "@/components/results/ActivityChart";
-import { Button } from "@/components/ui/Button";
-
-interface OverviewTabProps {
-  poll: Poll;
-  results: PollResults;
-  token: string;
-  onRefresh: () => void;
-}
 
 export function OverviewTab({
   poll,
   results,
   token,
   onRefresh,
-}: OverviewTabProps) {
-  async function closePoll() {
-    await fetch(`/api/polls/${poll.id}/manage?token=${token}`, {
+}: {
+  poll: Poll;
+  results: PollResults;
+  token: string;
+  onRefresh: () => void;
+}) {
+  const headers = {
+    "Content-Type": "application/json",
+    "x-manage-token": token,
+  };
+
+  async function action(body: object) {
+    await fetch(`/api/polls/${poll.id}/manage?token=${encodeURIComponent(token)}`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "close" }),
+      headers,
+      body: JSON.stringify(body),
     });
     onRefresh();
   }
 
   return (
     <div className="space-y-6">
-      <StatsRow
-        totalVotes={results.totalVotes}
-        ratingAverage={results.ratingAverage}
-      />
-      <ResultsBreakdown poll={poll} results={results} />
-      <ActivityChart activity={results.activity} accentColor={poll.accentColor} />
-      <Button type="button" variant="secondary" onClick={closePoll}>
-        Clore le sondage
-      </Button>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {[
+          { label: "Total votes", value: results.totalVotes },
+          { label: "Unique voters", value: results.totalVotes },
+          { label: "Comments", value: results.comments.length },
+          {
+            label: "Time active",
+            value: `${Math.max(1, Math.round((Date.now() - new Date(poll.createdAt).getTime()) / 3_600_000))}h`,
+          },
+        ].map((s) => (
+          <Card key={s.label} className="p-4 text-center">
+            <p className="font-display text-2xl font-bold">{s.value}</p>
+            <p className="text-xs uppercase tracking-wider text-zinc-500">
+              {s.label}
+            </p>
+          </Card>
+        ))}
+      </div>
+
+      <Card className="space-y-4">
+        <h3 className="font-display font-semibold">Results snapshot</h3>
+        <ResultsBreakdown poll={poll} results={results} />
+        <ActivityChart activity={results.activity} accentColor={poll.accentColor} />
+      </Card>
+
+      <div className="flex flex-wrap gap-2">
+        <Button variant="ghost" type="button" onClick={() => action({ action: "close" })}>
+          Close poll
+        </Button>
+        <Button
+          variant="ghost"
+          type="button"
+          onClick={() => {
+            const d = new Date();
+            d.setDate(d.getDate() + 1);
+            action({ action: "extend", expiresAt: d.toISOString() });
+          }}
+        >
+          Extend +24h
+        </Button>
+        <Button variant="ghost" type="button" onClick={() => action({ action: "duplicate" })}>
+          Duplicate poll
+        </Button>
+      </div>
     </div>
   );
 }
