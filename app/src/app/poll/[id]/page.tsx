@@ -1,13 +1,14 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getPoll } from "@/lib/dynamodb/polls";
-import { isPollOpen } from "@/lib/vote-guard";
+import { getPollResolved, isPollOpen } from "@/lib/poll-status";
 import { VoteForm } from "@/components/voting/VoteForm";
+import { Card } from "@/components/ui/Card";
 
 type PageProps = { params: Promise<{ id: string }> };
 
 export default async function VotePage({ params }: PageProps) {
   const { id } = await params;
-  const poll = await getPoll(id);
+  const poll = await getPollResolved(id);
 
   if (!poll) notFound();
 
@@ -23,11 +24,22 @@ export default async function VotePage({ params }: PageProps) {
 
   if (!open) {
     return (
-      <div className="p-6 text-center">
-        <h1 className="text-xl font-semibold">Ce sondage est clos</h1>
-        <a href={`/poll/${id}/results`} className="mt-4 inline-block text-indigo-600">
-          Voir les résultats
-        </a>
+      <div className="flex min-h-[50vh] items-center justify-center px-4">
+        <Card className="max-w-md text-center">
+          <div className="text-5xl">🕐</div>
+          <h1 className="font-display mt-4 text-xl font-bold">
+            This poll has {poll.status === "expired" ? "expired" : "closed"}
+          </h1>
+          {(poll.settings.showResultsBeforeClose ||
+            poll.status !== "active") && (
+            <Link
+              href={`/poll/${id}/results`}
+              className="mt-6 inline-block text-violet-400 hover:underline"
+            >
+              View results →
+            </Link>
+          )}
+        </Card>
       </div>
     );
   }

@@ -2,38 +2,48 @@
 
 import type { PollOption } from "@/types/poll";
 
-interface SingleChoiceProps {
-  options: PollOption[];
-  value: string | null;
-  accentColor: string;
-  onChange: (optionId: string) => void;
-}
-
 export function SingleChoice({
   options,
   value,
   accentColor,
   onChange,
-}: SingleChoiceProps) {
+}: {
+  options: PollOption[];
+  value: string | null;
+  accentColor: string;
+  onChange: (id: string) => void;
+}) {
   return (
     <div className="space-y-2">
-      {options.map((opt) => (
-        <button
-          key={opt.id}
-          type="button"
-          onClick={() => onChange(opt.id)}
-          className={`w-full rounded-lg border p-4 text-left transition-colors ${
-            value === opt.id ? "border-2" : "border-zinc-200 dark:border-zinc-800"
-          }`}
-          style={
-            value === opt.id
-              ? { borderColor: accentColor, backgroundColor: `${accentColor}15` }
-              : undefined
-          }
-        >
-          {opt.label}
-        </button>
-      ))}
+      {options.map((opt) => {
+        const selected = value === opt.id;
+        return (
+          <button
+            key={opt.id}
+            type="button"
+            onClick={() => onChange(opt.id)}
+            className={`flex w-full items-center justify-between rounded-xl border px-4 py-4 text-left transition ${
+              selected
+                ? "qp-option-selected"
+                : "border-zinc-700 bg-zinc-900 hover:bg-violet-600/5 hover:border-violet-600/50"
+            }`}
+            style={
+              selected
+                ? { borderLeftColor: accentColor }
+                : undefined
+            }
+          >
+            <span className="font-medium text-zinc-100">{opt.label}</span>
+            <span
+              className={`flex size-5 items-center justify-center rounded-full border-2 ${
+                selected ? "border-violet-500 bg-violet-600 text-white" : "border-zinc-600"
+              }`}
+            >
+              {selected && "✓"}
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 }

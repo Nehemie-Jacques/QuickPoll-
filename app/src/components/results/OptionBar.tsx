@@ -1,32 +1,38 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { Badge } from "@/components/ui/Badge";
 
-interface OptionBarProps {
+export function OptionBar({
+  label,
+  count,
+  total,
+  isLeader,
+}: {
   label: string;
   count: number;
   total: number;
-  accentColor: string;
-}
-
-export function OptionBar({ label, count, total, accentColor }: OptionBarProps) {
+  isLeader?: boolean;
+}) {
   const pct = total > 0 ? Math.round((count / total) * 100) : 0;
 
   return (
-    <div>
-      <div className="mb-1 flex justify-between text-sm">
-        <span>{label}</span>
-        <span className="text-zinc-500">
-          {count} ({pct}%)
+    <div className={isLeader ? "rounded-lg border-l-4 border-amber-500/80 pl-3" : ""}>
+      <div className="mb-1.5 flex items-center justify-between gap-2">
+        <span className="flex items-center gap-2 text-sm font-medium text-zinc-200">
+          {label}
+          {isLeader && <Badge tone="gold">👑 Leading</Badge>}
+        </span>
+        <span className="text-sm text-zinc-500">
+          {count} · {pct}%
         </span>
       </div>
-      <div className="h-3 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
+      <div className="qp-progress-track">
         <motion.div
-          className="h-full rounded-full"
-          style={{ backgroundColor: accentColor }}
+          className="qp-progress-fill"
           initial={{ width: 0 }}
           animate={{ width: `${pct}%` }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
         />
       </div>
     </div>

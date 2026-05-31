@@ -1,25 +1,65 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { Card } from "@/components/ui/Card";
+import { formatTimeRemaining } from "@/lib/time-remaining";
+import type { Poll } from "@/types/poll";
+import type { PollResults } from "@/types/poll";
 
-interface StatsRowProps {
-  totalVotes: number;
-  ratingAverage?: number;
+export function StatsRow({
+  poll,
+  results,
+  leadingLabel,
+}: {
+  poll: Poll;
+  results: PollResults;
+  leadingLabel?: string;
+}) {
+  const time = formatTimeRemaining(poll.expiresAt);
+
+  return (
+    <div className="grid gap-3 sm:grid-cols-3">
+      <StatCard
+        icon="🗳"
+        label="Total votes"
+        value={String(results.totalVotes)}
+      />
+      <StatCard icon="🕐" label="Time" value={time ?? "No limit"} />
+      <StatCard
+        icon="🏆"
+        label="Leading"
+        value={leadingLabel ?? "—"}
+        small
+      />
+    </div>
+  );
 }
 
-export function StatsRow({ totalVotes, ratingAverage }: StatsRowProps) {
+function StatCard({
+  icon,
+  label,
+  value,
+  small,
+}: {
+  icon: string;
+  label: string;
+  value: string;
+  small?: boolean;
+}) {
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
-      <Card className="text-center">
-        <p className="text-3xl font-bold">{totalVotes}</p>
-        <p className="text-sm text-zinc-500">Votes</p>
-      </Card>
-      {ratingAverage !== undefined && (
-        <Card className="text-center">
-          <p className="text-3xl font-bold">{ratingAverage.toFixed(1)}</p>
-          <p className="text-sm text-zinc-500">Moyenne / 5</p>
-        </Card>
-      )}
-    </div>
+    <Card className="p-4 text-center">
+      <span className="text-xl">{icon}</span>
+      <motion.p
+        key={value}
+        initial={{ scale: 1.1 }}
+        animate={{ scale: 1 }}
+        className={`mt-2 font-display font-bold text-zinc-50 ${small ? "truncate text-sm" : "text-2xl"}`}
+      >
+        {value}
+      </motion.p>
+      <p className="mt-1 text-xs uppercase tracking-wider text-zinc-500">
+        {label}
+      </p>
+    </Card>
   );
 }

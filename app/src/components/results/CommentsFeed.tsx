@@ -1,24 +1,52 @@
 "use client";
 
-import type { PollResults } from "@/types/poll";
-import { Card } from "@/components/ui/Card";
+import type { Poll, PollResults } from "@/types/poll";
+import { Badge } from "@/components/ui/Badge";
 
-interface CommentsFeedProps {
-  comments: PollResults["comments"];
+function choiceLabel(
+  poll: Poll,
+  c: PollResults["comments"][0],
+): string {
+  if (c.yesNo !== undefined) return c.yesNo ? "Yes" : "No";
+  if (c.rating !== undefined) return `${c.rating}★`;
+  if (c.optionIds?.length) {
+    const labels = c.optionIds
+      .map((id) => poll.options.find((o) => o.id === id)?.label)
+      .filter(Boolean);
+    return labels.join(", ") || "—";
+  }
+  return "—";
 }
 
-export function CommentsFeed({ comments }: CommentsFeedProps) {
+export function CommentsFeed({
+  poll,
+  comments,
+}: {
+  poll: Poll;
+  comments: PollResults["comments"];
+}) {
   if (comments.length === 0) {
-    return <p className="text-sm text-zinc-500">Aucun commentaire</p>;
+    return <p className="text-sm text-zinc-500">No comments yet</p>;
   }
 
   return (
-    <div className="max-h-64 space-y-2 overflow-y-auto">
+    <div className="max-h-72 space-y-2 overflow-y-auto pr-1">
       {comments.map((c, i) => (
-        <Card key={i} className="p-3">
-          <p className="text-sm font-medium">{c.alias ?? "Anonyme"}</p>
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">{c.text}</p>
-        </Card>
+        <div
+          key={i}
+          className="rounded-xl border border-zinc-800 bg-zinc-800/50 p-4"
+        >
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-zinc-200">
+              {c.alias ?? "Anonymous"}
+            </span>
+            <Badge tone="violet">{choiceLabel(poll, c)}</Badge>
+            <span className="ml-auto text-xs text-zinc-600">
+              {new Date(c.createdAt).toLocaleString()}
+            </span>
+          </div>
+          <p className="mt-2 text-sm text-zinc-400">{c.text}</p>
+        </div>
       ))}
     </div>
   );

@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Poll, PollResults } from "@/types/poll";
+import { computePollStatus } from "@/lib/poll-status";
+import { POLL_TYPE_LABELS } from "@/lib/poll-labels";
 import { Card } from "@/components/ui/Card";
 import { LiveIndicator } from "./LiveIndicator";
 import { StatsRow } from "./StatsRow";
@@ -10,22 +12,23 @@ import { ActivityChart } from "./ActivityChart";
 import { CommentsFeed } from "./CommentsFeed";
 import { SharePanel } from "./SharePanel";
 
-interface ResultsViewProps {
-  pollId: string;
-  initialPoll: Poll;
-  initialResults: PollResults;
-  voteUrl: string;
-}
-
 export function ResultsView({
   pollId,
   initialPoll,
   initialResults,
   voteUrl,
-}: ResultsViewProps) {
+}: {
+  pollId: string;
+  initialPoll: Poll;
+  initialResults: PollResults;
+  voteUrl: string;
+}) {
   const [poll, setPoll] = useState(initialPoll);
   const [results, setResults] = useState(initialResults);
   const [connected, setConnected] = useState(false);
+
+  const status = computePollStatus(poll);
+  const closed = status !== "active";
 
   useEffect(() => {
     const es = new EventSource(`/api/polls/${pollId}/stream`);
@@ -39,32 +42,60 @@ export function ResultsView({
     return () => es.close();
   }, [pollId]);
 
+  const leadingLabel = useMemo(() => {
+    if (poll.type === "yes_no") {
+      const y = results.breakdown.yes ?? 0;
+      const n = results.breakdown.no ?? 0;
+      if (y >= n && y > 0) return "Yes";
+      if (n > 0) return "No";
+      return undefined;
+    }
+    let best = { label: "", count: 0 };
+    for (const o of poll.options) {
+      const c = results.breakdown[o.id] ?? 0;
+      if (c > best.count) best = { label: o.label, count: c };
+    }
+    return best.count > 0 ? best.label : undefined;
+  }, [poll, results]);
+
   return (
-    <div className="mx-auto max-w-2xl space-y-6 p-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{poll.title}</h1>
-        <LiveIndicator connected={connected} />
+    <div className="mx-auto max-w-[680px] px-4 py-8">
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="font-display text-2xl font-bold">{poll.title}</h1>
+          <p className="mt-1 text-sm text-violet-400">
+            {POLL_TYPE_LABELS[poll.type]}
+          </p>
+        </div>
+        <LiveIndicator connected={connected} closed={closed} />
       </div>
-      <StatsRow
-        totalVotes={results.totalVotes}
-        ratingAverage={results.ratingAverage}
-      />
-      <Card className="space-y-4">
-        <h2 className="font-semibold">Résultats</h2>
+
+      <StatsRow poll={poll} results={results} leadingLabel={leadingLabel} />
+
+      <Card className="mt-6 space-y-4">
+        <h2 className="font-display text-lg font-semibold">Results</h2>
         <ResultsBreakdown poll={poll} results={results} />
       </Card>
-      <Card>
-        <h2 className="mb-4 font-semibold">Activité</h2>
+
+      <Card className="mt-6">
+        <h2 className="mb-4 font-display text-lg font-semibold">Vote activity</h2>
         <ActivityChart activity={results.activity} accentColor={poll.accentColor} />
       </Card>
+
       {poll.settings.allowComments && (
-        <Card>
-          <h2 className="mb-4 font-semibold">Commentaires</h2>
-          <CommentsFeed comments={results.comments} />
+        <Card className="mt-6">
+          <h2 className="mb-4 flex items-center gap-2 font-display text-lg font-semibold">
+            Voter comments
+            <span className="rounded-full bg-zinc-800 px-2 py-0.5 text-xs text-zinc-400">
+              {results.comments.length}
+            </span>
+          </h2>
+          <CommentsFeed poll={poll} comments={results.comments} />
         </Card>
       )}
-      <Card>
-        <h2 className="mb-4 font-semibold">Partager</h2>
+
+      <Card className="mt-6">
+        <h2 className="mb-4 font-display text-lg font-semibold">Share this poll</h2>
         <SharePanel pollId={pollId} voteUrl={voteUrl} />
       </Card>
     </div>

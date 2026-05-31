@@ -1,12 +1,23 @@
 "use client";
 
-export function LiveIndicator({ connected }: { connected: boolean }) {
+import { Badge } from "@/components/ui/Badge";
+
+export function LiveIndicator({
+  connected,
+  closed,
+}: {
+  connected: boolean;
+  closed?: boolean;
+}) {
+  if (closed) {
+    return <Badge tone="muted">Closed</Badge>;
+  }
   return (
-    <span className="inline-flex items-center gap-2 text-sm">
+    <Badge tone="live">
       <span
-        className={`size-2 rounded-full ${connected ? "animate-pulse bg-emerald-500" : "bg-zinc-400"}`}
+        className={`size-2 rounded-full bg-emerald-500 ${connected ? "qp-live-dot" : "opacity-40"}`}
       />
-      {connected ? "En direct" : "Hors ligne"}
-    </span>
+      Live
+    </Badge>
   );
 }

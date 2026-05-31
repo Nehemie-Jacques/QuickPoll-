@@ -2,35 +2,26 @@
 
 import type { PollOption } from "@/types/poll";
 
-interface MultipleChoiceProps {
-  options: PollOption[];
-  value: string[];
-  maxChoices: number;
-  accentColor: string;
-  onChange: (optionIds: string[]) => void;
-}
-
 export function MultipleChoice({
   options,
   value,
   maxChoices,
-  accentColor,
   onChange,
-}: MultipleChoiceProps) {
+}: {
+  options: PollOption[];
+  value: string[];
+  maxChoices: number;
+  accentColor: string;
+  onChange: (ids: string[]) => void;
+}) {
   function toggle(id: string) {
-    if (value.includes(id)) {
-      onChange(value.filter((v) => v !== id));
-      return;
-    }
-    if (value.length >= maxChoices) return;
-    onChange([...value, id]);
+    if (value.includes(id)) onChange(value.filter((v) => v !== id));
+    else if (value.length < maxChoices) onChange([...value, id]);
   }
 
   return (
     <div className="space-y-2">
-      <p className="text-sm text-zinc-500">
-        Sélectionnez jusqu&apos;à {maxChoices} option(s)
-      </p>
+      <p className="text-xs text-zinc-500">Select up to {maxChoices}</p>
       {options.map((opt) => {
         const selected = value.includes(opt.id);
         return (
@@ -38,16 +29,20 @@ export function MultipleChoice({
             key={opt.id}
             type="button"
             onClick={() => toggle(opt.id)}
-            className={`w-full rounded-lg border p-4 text-left ${
-              selected ? "border-2" : "border-zinc-200 dark:border-zinc-800"
-            }`}
-            style={
+            className={`flex w-full items-center justify-between rounded-xl border px-4 py-4 text-left transition ${
               selected
-                ? { borderColor: accentColor, backgroundColor: `${accentColor}15` }
-                : undefined
-            }
+                ? "qp-option-selected"
+                : "border-zinc-700 bg-zinc-900 hover:bg-violet-600/5"
+            }`}
           >
-            {opt.label}
+            <span>{opt.label}</span>
+            <span
+              className={`flex size-5 items-center justify-center rounded border ${
+                selected ? "border-violet-500 bg-violet-600 text-white" : "border-zinc-600"
+              }`}
+            >
+              {selected && "✓"}
+            </span>
           </button>
         );
       })}

@@ -1,34 +1,39 @@
 "use client";
 
-interface YesNoProps {
+export function YesNo({
+  value,
+  onChange,
+}: {
   value: boolean | null;
   accentColor: string;
-  onChange: (value: boolean) => void;
-}
-
-export function YesNo({ value, accentColor, onChange }: YesNoProps) {
+  onChange: (v: boolean) => void;
+}) {
   return (
     <div className="grid grid-cols-2 gap-4">
-      {[
-        { label: "Oui", v: true },
-        { label: "Non", v: false },
-      ].map(({ label, v }) => (
-        <button
-          key={label}
-          type="button"
-          onClick={() => onChange(v)}
-          className={`rounded-xl border-2 py-8 text-xl font-semibold ${
-            value === v ? "" : "border-zinc-200 dark:border-zinc-800"
-          }`}
-          style={
-            value === v
-              ? { borderColor: accentColor, color: accentColor }
-              : undefined
-          }
-        >
-          {label}
-        </button>
-      ))}
+      <button
+        type="button"
+        onClick={() => onChange(true)}
+        className={`rounded-xl border-2 py-10 transition ${
+          value === true
+            ? "border-emerald-500 bg-emerald-500/10"
+            : "border-zinc-700 bg-zinc-900 hover:border-emerald-600/50"
+        }`}
+      >
+        <span className="text-3xl">👍</span>
+        <p className="mt-2 text-lg font-semibold text-emerald-400">Yes</p>
+      </button>
+      <button
+        type="button"
+        onClick={() => onChange(false)}
+        className={`rounded-xl border-2 py-10 transition ${
+          value === false
+            ? "border-red-500 bg-red-500/10"
+            : "border-zinc-700 bg-zinc-900 hover:border-red-600/50"
+        }`}
+      >
+        <span className="text-3xl">👎</span>
+        <p className="mt-2 text-lg font-semibold text-red-400">No</p>
+      </button>
     </div>
   );
 }

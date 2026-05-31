@@ -3,53 +3,52 @@
 import type { Poll, PollResults } from "@/types/poll";
 import { OptionBar } from "./OptionBar";
 
-interface ResultsBreakdownProps {
+export function ResultsBreakdown({
+  poll,
+  results,
+}: {
   poll: Poll;
   results: PollResults;
-}
-
-export function ResultsBreakdown({ poll, results }: ResultsBreakdownProps) {
+}) {
   const total = results.totalVotes;
 
+  let entries: { key: string; label: string; count: number }[] = [];
+
   if (poll.type === "yes_no") {
-    return (
-      <div className="space-y-3">
-        <OptionBar label="Oui" count={results.breakdown.yes ?? 0} total={total} accentColor={poll.accentColor} />
-        <OptionBar label="Non" count={results.breakdown.no ?? 0} total={total} accentColor={poll.accentColor} />
-      </div>
-    );
+    entries = [
+      { key: "yes", label: "Yes", count: results.breakdown.yes ?? 0 },
+      { key: "no", label: "No", count: results.breakdown.no ?? 0 },
+    ];
+  } else if (poll.type === "rating") {
+    entries = [5, 4, 3, 2, 1].map((n) => ({
+      key: `rating-${n}`,
+      label: `${n} ★`,
+      count: results.breakdown[`rating-${n}`] ?? 0,
+    }));
+  } else {
+    entries = poll.options.map((o) => ({
+      key: o.id,
+      label: o.label,
+      count: results.breakdown[o.id] ?? 0,
+    }));
   }
 
-  if (poll.type === "rating") {
-    return (
-      <div className="space-y-3">
-        {results.ratingAverage !== undefined && (
-          <p className="text-lg font-semibold">
-            Moyenne : {results.ratingAverage.toFixed(1)} / 5
-          </p>
-        )}
-        {[5, 4, 3, 2, 1].map((n) => (
-          <OptionBar
-            key={n}
-            label={`${n} ★`}
-            count={results.breakdown[`rating-${n}`] ?? 0}
-            total={total}
-            accentColor={poll.accentColor}
-          />
-        ))}
-      </div>
-    );
-  }
+  const max = Math.max(...entries.map((e) => e.count), 0);
 
   return (
-    <div className="space-y-3">
-      {poll.options.map((opt) => (
+    <div className="space-y-4">
+      {results.ratingAverage !== undefined && (
+        <p className="text-lg font-semibold text-zinc-200">
+          Average: {results.ratingAverage.toFixed(1)} / 5
+        </p>
+      )}
+      {entries.map((e) => (
         <OptionBar
-          key={opt.id}
-          label={opt.label}
-          count={results.breakdown[opt.id] ?? 0}
+          key={e.key}
+          label={e.label}
+          count={e.count}
           total={total}
-          accentColor={poll.accentColor}
+          isLeader={e.count > 0 && e.count === max}
         />
       ))}
     </div>
