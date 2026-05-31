@@ -4,40 +4,40 @@ import type { ExpirationPreset } from "@/types/poll";
 import { Input } from "@/components/ui/Input";
 
 const PRESETS: { value: ExpirationPreset; label: string }[] = [
-  { value: "1h", label: "1 heure" },
-  { value: "6h", label: "6 heures" },
-  { value: "24h", label: "24 heures" },
-  { value: "7d", label: "7 jours" },
-  { value: "custom", label: "Date personnalisée" },
-  { value: "none", label: "Sans expiration" },
+  { value: "1h", label: "1h" },
+  { value: "6h", label: "6h" },
+  { value: "24h", label: "24h" },
+  { value: "7d", label: "7 days" },
+  { value: "custom", label: "Custom" },
+  { value: "none", label: "Never" },
 ];
-
-interface ExpirationPickerProps {
-  expiration: ExpirationPreset;
-  customExpiresAt: string;
-  onExpirationChange: (v: ExpirationPreset) => void;
-  onCustomChange: (v: string) => void;
-}
 
 export function ExpirationPicker({
   expiration,
   customExpiresAt,
   onExpirationChange,
   onCustomChange,
-}: ExpirationPickerProps) {
+}: {
+  expiration: ExpirationPreset;
+  customExpiresAt: string;
+  onExpirationChange: (v: ExpirationPreset) => void;
+  onCustomChange: (v: string) => void;
+}) {
   return (
-    <div className="space-y-2">
-      <label className="text-sm font-medium">Expiration</label>
-      <div className="flex flex-wrap gap-2">
+    <div className="space-y-3">
+      <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">
+        Expiration
+      </p>
+      <div className="flex flex-wrap gap-1 rounded-lg bg-zinc-900 p-1">
         {PRESETS.map((p) => (
           <button
             key={p.value}
             type="button"
             onClick={() => onExpirationChange(p.value)}
-            className={`rounded-full px-3 py-1 text-sm ${
+            className={`rounded-md px-3 py-1.5 text-xs font-medium transition ${
               expiration === p.value
-                ? "bg-indigo-600 text-white"
-                : "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+                ? "bg-violet-600 text-white"
+                : "text-zinc-400 hover:text-zinc-200"
             }`}
           >
             {p.label}

@@ -7,9 +7,9 @@ interface ToastItem {
   message: string;
 }
 
-const ToastContext = createContext<{
-  show: (message: string) => void;
-} | null>(null);
+const ToastContext = createContext<{ show: (message: string) => void } | null>(
+  null,
+);
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
@@ -17,9 +17,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const show = useCallback((message: string) => {
     const id = Date.now();
     setToasts((t) => [...t, { id, message }]);
-    setTimeout(() => {
-      setToasts((t) => t.filter((x) => x.id !== id));
-    }, 3000);
+    setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 3200);
   }, []);
 
   return (
@@ -29,7 +27,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         {toasts.map((t) => (
           <div
             key={t.id}
-            className="rounded-lg bg-zinc-900 px-4 py-2 text-sm text-white shadow-lg"
+            className="rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-3 text-sm text-zinc-100 shadow-xl animate-[qp-fade-in_200ms_ease]"
           >
             {t.message}
           </div>

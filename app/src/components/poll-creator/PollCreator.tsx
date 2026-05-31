@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import type { CreatePollInput, ExpirationPreset, PollType } from "@/types/poll";
+import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { Input } from "@/components/ui/Input";
+import { Input, Textarea } from "@/components/ui/Input";
 import { PollTypeSelector } from "./PollTypeSelector";
 import { OptionsList } from "./OptionsList";
 import { ExpirationPicker } from "./ExpirationPicker";
@@ -14,10 +15,11 @@ import {
 } from "./AdvancedSettings";
 import { SuccessScreen } from "./SuccessScreen";
 
-const ACCENT_COLORS = ["#6366f1", "#ec4899", "#14b8a6", "#f59e0b", "#ef4444"];
+const ACCENTS = ["#7C3AED", "#2563EB", "#EC4899", "#14B8A6", "#F97316"];
 
 const defaultAdvanced: AdvancedSettingsState = {
   password: "",
+  passwordEnabled: false,
   allowComments: false,
   showResultsBeforeClose: true,
   requireAlias: false,
@@ -30,17 +32,19 @@ export function PollCreator() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [options, setOptions] = useState(["", ""]);
-  const [accentColor, setAccentColor] = useState(ACCENT_COLORS[0]);
+  const [accentColor, setAccentColor] = useState(ACCENTS[0]);
   const [expiration, setExpiration] = useState<ExpirationPreset>("24h");
   const [customExpiresAt, setCustomExpiresAt] = useState("");
   const [advanced, setAdvanced] = useState(defaultAdvanced);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState<{
+    pollId: string;
     voteUrl: string;
     manageUrl: string;
   } | null>(null);
 
   const showOptions = type === "single_choice" || type === "multiple_choice";
+  const fixedOptions = type === "yes_no";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -53,8 +57,14 @@ export function PollCreator() {
       options: showOptions
         ? options.filter(Boolean).map((label) => ({ label }))
         : type === "yes_no"
-          ? [{ label: "Oui" }, { label: "Non" }]
-          : [{ label: "1" }, { label: "2" }, { label: "3" }, { label: "4" }, { label: "5" }],
+          ? [{ label: "Yes" }, { label: "No" }]
+          : [
+              { label: "1" },
+              { label: "2" },
+              { label: "3" },
+              { label: "4" },
+              { label: "5" },
+            ],
       accentColor,
       expiration,
       customExpiresAt:
@@ -63,7 +73,10 @@ export function PollCreator() {
           : undefined,
       notifyEmail: advanced.notifyEmail || undefined,
       settings: {
-        password: advanced.password || undefined,
+        password:
+          advanced.passwordEnabled && advanced.password
+            ? advanced.password
+            : undefined,
         allowComments: advanced.allowComments,
         showResultsBeforeClose: advanced.showResultsBeforeClose,
         requireAlias: advanced.requireAlias,
@@ -79,9 +92,13 @@ export function PollCreator() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      setSuccess({ voteUrl: data.voteUrl, manageUrl: data.manageUrl });
+      setSuccess({
+        pollId: data.pollId,
+        voteUrl: data.voteUrl,
+        manageUrl: data.manageUrl,
+      });
     } catch {
-      alert("Erreur lors de la création");
+      alert("Could not create poll");
     } finally {
       setLoading(false);
     }
@@ -90,6 +107,7 @@ export function PollCreator() {
   if (success) {
     return (
       <SuccessScreen
+        pollId={success.pollId}
         voteUrl={success.voteUrl}
         manageUrl={success.manageUrl}
         onReset={() => {
@@ -104,62 +122,97 @@ export function PollCreator() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mx-auto max-w-2xl space-y-6">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold tracking-tight">QuickPoll</h1>
-        <p className="mt-2 text-zinc-500">Créez un sondage en quelques secondes</p>
-      </div>
+    <div className="mx-auto max-w-[640px] px-4 pb-16">
+      <section className="mb-8 text-center">
+        <Badge tone="violet" className="mb-4">
+          ✦ No account required
+        </Badge>
+        <h1 className="font-display text-4xl font-bold tracking-tight text-zinc-50 sm:text-5xl">
+          Create a poll in seconds
+        </h1>
+        <p className="mt-3 text-zinc-400">
+          Share the link. Get instant results. No sign-up needed.
+        </p>
+      </section>
 
-      <Card className="space-y-6">
-        <Input
-          placeholder="Titre du sondage"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
-        />
-        <Input
-          placeholder="Description (optionnelle)"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-
-        <PollTypeSelector value={type} onChange={setType} />
-        <OptionsList
-          options={options}
-          onChange={setOptions}
-          showOptions={showOptions}
-        />
-
-        <div>
-          <label className="text-sm font-medium">Couleur d&apos;accent</label>
-          <div className="mt-2 flex gap-2">
-            {ACCENT_COLORS.map((c) => (
-              <button
-                key={c}
-                type="button"
-                onClick={() => setAccentColor(c)}
-                className={`size-8 rounded-full ring-2 ring-offset-2 ${
-                  accentColor === c ? "ring-indigo-600" : "ring-transparent"
-                }`}
-                style={{ backgroundColor: c }}
-              />
-            ))}
+      <form onSubmit={handleSubmit}>
+        <Card className="space-y-8">
+          <div>
+            <p className="mb-3 text-xs font-medium uppercase tracking-wider text-zinc-500">
+              Poll type
+            </p>
+            <PollTypeSelector value={type} onChange={setType} />
           </div>
-        </div>
 
-        <ExpirationPicker
-          expiration={expiration}
-          customExpiresAt={customExpiresAt}
-          onExpirationChange={setExpiration}
-          onCustomChange={setCustomExpiresAt}
-        />
+          <div className="space-y-4">
+            <Input
+              placeholder="Your question or poll title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+              className="text-lg font-medium"
+            />
+            <Textarea
+              placeholder="Add a description (optional)"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={2}
+            />
+            <OptionsList
+              options={options}
+              onChange={setOptions}
+              showOptions={showOptions}
+              fixed={fixedOptions}
+            />
+          </div>
 
-        <AdvancedSettings type={type} settings={advanced} onChange={setAdvanced} />
+          <div>
+            <p className="mb-2 text-xs font-medium uppercase tracking-wider text-zinc-500">
+              Accent color
+            </p>
+            <div className="flex gap-2">
+              {ACCENTS.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setAccentColor(c)}
+                  className={`size-8 rounded-full ring-2 ring-offset-2 ring-offset-zinc-900 ${
+                    accentColor === c ? "ring-violet-500" : "ring-transparent"
+                  }`}
+                  style={{ backgroundColor: c }}
+                />
+              ))}
+            </div>
+          </div>
 
-        <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? "Création…" : "Créer le sondage"}
-        </Button>
-      </Card>
-    </form>
+          <ExpirationPicker
+            expiration={expiration}
+            customExpiresAt={customExpiresAt}
+            onExpirationChange={setExpiration}
+            onCustomChange={setCustomExpiresAt}
+          />
+
+          <AdvancedSettings
+            type={type}
+            settings={advanced}
+            onChange={setAdvanced}
+          />
+
+          <div>
+            <Button
+              type="submit"
+              variant="cta"
+              className="w-full text-base"
+              disabled={loading}
+            >
+              {loading ? "Creating…" : "Create Poll →"}
+            </Button>
+            <p className="mt-3 text-center text-xs text-zinc-500">
+              Your poll creator link will appear after creation.
+            </p>
+          </div>
+        </Card>
+      </form>
+    </div>
   );
 }

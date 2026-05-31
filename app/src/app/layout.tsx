@@ -1,22 +1,30 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Plus_Jakarta_Sans, Inter, JetBrains_Mono } from "next/font/google";
 import { ToastProvider } from "@/components/ui/Toast";
-import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { SiteHeader } from "@/components/layout/SiteHeader";
+import { SiteFooter } from "@/components/layout/SiteFooter";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const jakarta = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+});
+
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const jetbrains = JetBrains_Mono({
+  variable: "--font-mono-jb",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "QuickPoll",
-  description: "Sondages en temps réel — simples et rapides",
+  title: "QuickPoll — Create polls. Share instantly. See results live.",
+  description:
+    "Create polls. Share instantly. See results live. No account required.",
 };
 
 export default function RootLayout({
@@ -26,15 +34,18 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="fr"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      lang="en"
+      className={`${jakarta.variable} ${inter.variable} ${jetbrains.variable} h-full antialiased dark`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full">
+      <body
+        className="flex min-h-full flex-col bg-[var(--bg-primary)] text-[var(--text-primary)]"
+        suppressHydrationWarning
+      >
         <ToastProvider>
-          <header className="flex justify-end p-4">
-            <ThemeToggle />
-          </header>
-          <main className="pb-16">{children}</main>
+          <SiteHeader />
+          <main className="flex-1 qp-animate-in">{children}</main>
+          <SiteFooter />
         </ToastProvider>
       </body>
     </html>

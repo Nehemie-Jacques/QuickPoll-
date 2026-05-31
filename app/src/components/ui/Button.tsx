@@ -1,13 +1,13 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 
-type Variant = "primary" | "secondary" | "ghost" | "danger";
+type Variant = "primary" | "cta" | "secondary" | "ghost" | "danger";
 
 const variants: Record<Variant, string> = {
-  primary:
-    "bg-indigo-600 text-white hover:bg-indigo-500 disabled:opacity-50",
+  primary: "qp-btn-primary font-medium",
+  cta: "qp-btn-cta font-semibold",
   secondary:
-    "border border-zinc-300 bg-white text-zinc-900 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100",
-  ghost: "text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800",
+    "border border-zinc-700 bg-transparent text-zinc-200 hover:bg-zinc-800",
+  ghost: "border border-zinc-700 bg-transparent text-zinc-300 hover:bg-zinc-800/80",
   danger: "bg-red-600 text-white hover:bg-red-500",
 };
 
@@ -24,7 +24,7 @@ export function Button({
 }: ButtonProps) {
   return (
     <button
-      className={`inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium transition-colors ${variants[variant]} ${className}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-[10px] px-6 py-3 text-sm transition disabled:cursor-not-allowed disabled:opacity-50 ${variants[variant]} ${className}`}
       {...props}
     >
       {children}

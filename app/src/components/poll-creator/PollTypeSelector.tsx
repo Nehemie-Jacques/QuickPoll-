@@ -1,45 +1,49 @@
 "use client";
 
 import type { PollType } from "@/types/poll";
-import { Badge } from "@/components/ui/Badge";
 
-const TYPES: { value: PollType; label: string; description: string }[] = [
-  { value: "single_choice", label: "Choix unique", description: "Une seule option" },
-  {
-    value: "multiple_choice",
-    label: "Choix multiple",
-    description: "Plusieurs options (limite configurable)",
-  },
-  { value: "rating", label: "Notation", description: "Échelle 1 à 5 étoiles" },
-  { value: "yes_no", label: "Oui / Non", description: "Réponse binaire" },
+const TYPES: {
+  value: PollType;
+  label: string;
+  icon: string;
+}[] = [
+  { value: "single_choice", label: "Single choice", icon: "◉" },
+  { value: "multiple_choice", label: "Multiple choice", icon: "☑" },
+  { value: "rating", label: "Rating", icon: "★" },
+  { value: "yes_no", label: "Yes / No", icon: "👍" },
 ];
 
-interface PollTypeSelectorProps {
+export function PollTypeSelector({
+  value,
+  onChange,
+}: {
   value: PollType;
-  onChange: (type: PollType) => void;
-}
-
-export function PollTypeSelector({ value, onChange }: PollTypeSelectorProps) {
+  onChange: (t: PollType) => void;
+}) {
   return (
-    <div className="grid gap-3 sm:grid-cols-2">
-      {TYPES.map((t) => (
-        <button
-          key={t.value}
-          type="button"
-          onClick={() => onChange(t.value)}
-          className={`rounded-xl border p-4 text-left transition-colors ${
-            value === t.value
-              ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-950/40"
-              : "border-zinc-200 hover:border-zinc-300 dark:border-zinc-800"
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <span className="font-medium">{t.label}</span>
-            {value === t.value && <Badge>Actif</Badge>}
-          </div>
-          <p className="mt-1 text-sm text-zinc-500">{t.description}</p>
-        </button>
-      ))}
+    <div className="grid grid-cols-2 gap-3">
+      {TYPES.map((t) => {
+        const selected = value === t.value;
+        return (
+          <button
+            key={t.value}
+            type="button"
+            onClick={() => onChange(t.value)}
+            className={`flex min-h-[108px] flex-col items-center justify-center rounded-xl border p-4 text-center transition ${
+              selected
+                ? "qp-option-selected border-violet-600"
+                : "border-[var(--border-subtle)] bg-[var(--bg-surface)] hover:border-violet-600/50"
+            }`}
+          >
+            <span className="text-3xl leading-none" aria-hidden>
+              {t.icon}
+            </span>
+            <p className="mt-3 text-sm font-semibold text-[var(--text-primary)]">
+              {t.label}
+            </p>
+          </button>
+        );
+      })}
     </div>
   );
 }

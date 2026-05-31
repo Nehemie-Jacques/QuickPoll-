@@ -1,15 +1,14 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 interface CardProps {
   children: ReactNode;
   className?: string;
+  style?: CSSProperties;
 }
 
-export function Card({ children, className = "" }: CardProps) {
+export function Card({ children, className = "", style }: CardProps) {
   return (
-    <div
-      className={`rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-950 ${className}`}
-    >
+    <div className={`qp-card qp-card-hover p-6 ${className}`} style={style}>
       {children}
     </div>
   );
