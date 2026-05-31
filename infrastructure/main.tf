@@ -17,9 +17,9 @@ locals {
 }
 
 module "networking" {
-  source       = "./modules/networking"
-  name_prefix  = local.name_prefix
-  aws_region   = var.aws_region
+  source      = "./modules/networking"
+  name_prefix = local.name_prefix
+  aws_region  = var.aws_region
 }
 
 module "dynamodb" {
@@ -32,36 +32,35 @@ module "ecr" {
   name_prefix = local.name_prefix
 }
 
-module "ecs" {
-  source              = "./modules/ecs"
+module "alb" {
+  source              = "./modules/alb"
   name_prefix         = local.name_prefix
   vpc_id              = module.networking.vpc_id
-  private_subnet_ids  = module.networking.private_subnet_ids
-  ecr_repository_url  = module.ecr.repository_url
-  polls_table_name    = module.dynamodb.polls_table_name
-  votes_table_name    = module.dynamodb.votes_table_name
-  creator_jwt_secret  = var.creator_jwt_secret
-  ses_from_email      = var.ses_from_email
+  public_subnet_ids   = module.networking.public_subnet_ids
+  certificate_arn     = var.certificate_arn
 }
 
-module "alb" {
-  source            = "./modules/alb"
-  name_prefix       = local.name_prefix
-  vpc_id            = module.networking.vpc_id
-  public_subnet_ids = module.networking.public_subnet_ids
-  target_group_arn  = module.ecs.target_group_arn
+module "ecs" {
+  source                = "./modules/ecs"
+  name_prefix           = local.name_prefix
+  vpc_id                = module.networking.vpc_id
+  private_subnet_ids    = module.networking.private_subnet_ids
+  target_group_arn      = module.alb.target_group_arn
+  alb_security_group_id = module.alb.security_group_id
+  ecr_repository_url    = module.ecr.repository_url
+  image_tag             = var.image_tag
+  polls_table_name      = module.dynamodb.polls_table_name
+  votes_table_name      = module.dynamodb.votes_table_name
+  polls_table_arn       = module.dynamodb.polls_table_arn
+  votes_table_arn       = module.dynamodb.votes_table_arn
+  creator_jwt_secret    = var.creator_jwt_secret
+  aws_region            = var.aws_region
 }
 
 module "cloudfront" {
-  source      = "./modules/cloudfront"
-  name_prefix = local.name_prefix
-  alb_dns_name = module.alb.dns_name
-  domain_name = var.domain_name
-}
-
-module "ses" {
-  source         = "./modules/ses"
-  name_prefix    = local.name_prefix
-  domain_name    = var.domain_name
-  from_email     = var.ses_from_email
+  source          = "./modules/cloudfront"
+  name_prefix     = local.name_prefix
+  alb_dns_name    = module.alb.dns_name
+  domain_name     = var.domain_name
+  certificate_arn = var.certificate_arn
 }
