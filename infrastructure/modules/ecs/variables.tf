@@ -33,3 +33,8 @@ variable "desired_count" {
   default = 2
 }
 variable "aws_region" { type = string }
+
+variable "ses_from_email" {
+  type    = string
+  default = ""
+}

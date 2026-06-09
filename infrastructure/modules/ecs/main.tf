@@ -54,6 +54,22 @@ resource "aws_iam_role_policy" "dynamodb" {
   })
 }
 
+resource "aws_iam_role_policy" "ses" {
+  name = "${var.name_prefix}-ses"
+  role = aws_iam_role.task.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = [
+        "ses:SendEmail",
+        "ses:SendRawEmail",
+      ]
+      Resource = "*"
+    }]
+  })
+}
+
 resource "aws_security_group" "ecs" {
   name   = "${var.name_prefix}-ecs-sg"
   vpc_id = var.vpc_id
@@ -107,6 +123,7 @@ resource "aws_ecs_task_definition" "app" {
       { name = "DYNAMODB_POLLS_TABLE", value = var.polls_table_name },
       { name = "DYNAMODB_VOTES_TABLE", value = var.votes_table_name },
       { name = "CREATOR_JWT_SECRET", value = var.creator_jwt_secret },
+      { name = "SES_FROM_EMAIL", value = var.ses_from_email },
     ]
     logConfiguration = {
       logDriver = "awslogs"

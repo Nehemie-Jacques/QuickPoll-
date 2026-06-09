@@ -55,6 +55,7 @@ module "ecs" {
   votes_table_arn       = module.dynamodb.votes_table_arn
   creator_jwt_secret    = var.creator_jwt_secret
   aws_region            = var.aws_region
+  ses_from_email        = var.ses_from_email
 }
 
 module "cloudfront" {
