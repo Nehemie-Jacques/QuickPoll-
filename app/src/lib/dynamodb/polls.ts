@@ -4,7 +4,7 @@ import {
   UpdateCommand,
   DeleteCommand,
 } from "@aws-sdk/lib-dynamodb";
-import type { CreatePollInput, Poll, PollResults, PollStatus } from "@/types/poll";
+import type { CreatePollInput, Poll, PollResults } from "@/types/poll";
 import { docClient, POLLS_TABLE } from "./client";
 import { generateOptionId, generatePollId } from "@/lib/nanoid";
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import type { Poll, PollResults } from "@/types/poll";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -17,6 +18,10 @@ export function OverviewTab({
   token: string;
   onRefresh: () => void;
 }) {
+  const [timeActive] = useState(() =>
+    Math.max(1, Math.round((Date.now() - new Date(poll.createdAt).getTime()) / 3_600_000))
+  );
+
   const headers = {
     "Content-Type": "application/json",
     "x-manage-token": token,
@@ -40,7 +45,7 @@ export function OverviewTab({
           { label: "Comments", value: results.comments.length },
           {
             label: "Time active",
-            value: `${Math.max(1, Math.round((Date.now() - new Date(poll.createdAt).getTime()) / 3_600_000))}h`,
+            value: `${timeActive}h`,
           },
         ].map((s) => (
           <Card key={s.label} className="p-4 text-center">

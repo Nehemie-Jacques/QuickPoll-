@@ -22,9 +22,11 @@ export function ThemeToggle() {
       (window.matchMedia("(prefers-color-scheme: light)").matches
         ? "light"
         : "dark");
-    setTheme(initial);
     applyTheme(initial);
-    setMounted(true);
+    setTimeout(() => {
+      setTheme(initial);
+      setMounted(true);
+    }, 0);
   }, []);
 
   function toggle() {

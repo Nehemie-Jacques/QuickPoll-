@@ -44,7 +44,9 @@ export function ManageDashboard({
   }, [pollId, token]);
 
   useEffect(() => {
-    load();
+    setTimeout(() => {
+      load();
+    }, 0);
   }, [load]);
 
   const exportUrl = `/api/polls/${pollId}/export?token=${encodeURIComponent(token)}`;
