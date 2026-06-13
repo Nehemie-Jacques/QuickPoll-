@@ -1,129 +1,182 @@
-# Architecture de l'Infrastructure AWS - QuickPoll
+# Architecture de l'Infrastructure AWS et Provisionnement IaC - QuickPoll 🏗️
 
-Ce document décrit en détail l'infrastructure AWS de QuickPoll configurée à l'aide de Terraform. L'architecture a été conçue pour être hautement disponible, sécurisée, performante et conforme aux meilleures pratiques AWS.
+Ce document présente une vue d'ensemble technique complète et approfondie de l'infrastructure AWS de **QuickPoll**, gérée en tant que code (IaC) via **Terraform**. L'architecture a été conçue pour être hautement disponible, résiliente, sécurisée (modèle Zero-Trust) et performante, conformément aux meilleures pratiques de l'AWS Well-Architected Framework.
 
 ---
 
-## 1. Vue d'ensemble de l'Architecture
+## 📋 Table des Matières
+1. [Schéma d'Architecture](#1-schéma-darchitecture)
+2. [Analyse Détaillée du Réseau (Networking VPC)](#2-analyse-détaillée-du-réseau-networking-vpc)
+3. [Modules Terraform Applicatifs](#3-modules-terraform-applicatifs)
+   - [A. Dépôt de Conteneurs (Amazon ECR)](#a-dépôt-de-conteneurs-amazon-ecr)
+   - [B. Base de Données NoSQL (Amazon DynamoDB)](#b-base-de-données-nosql-amazon-dynamodb)
+   - [C. Orchestration Sans Serveur (Amazon ECS Fargate)](#c-orchestration-sans-serveur-amazon-ecs-fargate)
+   - [D. Répartition de Charge (Application Load Balancer)](#d-répartition-de-charge-application-load-balancer)
+   - [E. Diffusion Globale et Caching (AWS CloudFront CDN)](#e-diffusion-globale-et-caching-aws-cloudfront-cdn)
+   - [F. Service de Messagerie (Amazon SES)](#f-service-de-messagerie-amazon-ses)
+4. [Sécurité IAM et Politique de Moindre Privilège](#4-sécurité-iam-et-politique-de-moindre-privilège)
+5. [Guide des Commandes Terraform](#5-guide-des-commandes-terraform)
+6. [Pipeline CI/CD Automatisé (GitHub Actions)](#6-pipeline-cicd-automatisé-github-actions)
 
-L'architecture repose sur un modèle classique à plusieurs niveaux (Multi-tier) conteneurisé, protégé par un réseau de diffusion de contenu (CDN) et un répartiteur de charge (ALB).
+---
+
+## 1. Schéma d'Architecture
+
+Le trafic externe est filtré à la périphérie (Edge Locations), mis en cache si possible, puis acheminé vers un répartiteur de charge public avant d'être distribué de manière privée aux conteneurs de l'application Next.js.
 
 ```mermaid
 graph TD
-    Client[Navigateur Client] --> CF[AWS CloudFront CDN]
+    Client[Navigateur Client] -->|HTTPS Port 443| CF[AWS CloudFront CDN]
+    CF -->|Requêtes Statiques Cache| S3[Edge Caches]
     CF -->|Requêtes Dynamiques / API| ALB[Application Load Balancer]
-    CF -->|Fichiers Statiques Caches| S3[Edge Caches]
     ALB -->|Routage HTTP Port 3000| ECS[ECS Fargate Service]
-    ECS -->|Écriture / Lecture| Dynamo[Amazon DynamoDB]
-    ECS -->|Notifications Premier Vote| SES[AWS SES]
+    ECS -->|VPC Endpoint / NAT Gateway| Dynamo[Amazon DynamoDB]
+    ECS -->|SMTP / API SES| SES[AWS SES]
 ```
 
-### Flux d'une requête :
-1. Le **Client** accède au site via l'URL CloudFront (ou domaine personnalisé).
-2. **AWS CloudFront (CDN)** intercepte la requête. Si la requête concerne des ressources statiques (ex: `/_next/static/*`), CloudFront la sert directement depuis son cache global (Edge Location).
-3. Si la requête est dynamique (pages Next.js SSR ou routes d'API `/api/*`), CloudFront la transmet à l'**Application Load Balancer (ALB)** public.
-4. L'**ALB** distribue le trafic aux conteneurs de l'application s'exécutant sur **AWS ECS Fargate** dans des sous-réseaux privés.
-5. L'application interagit avec **Amazon DynamoDB** pour stocker/récupérer les sondages et les votes, et utilise **AWS SES** pour envoyer des alertes email lors des votes.
+### Parcours d'une requête HTTP/HTTPS :
+1. **Périphérie CloudFront** : Le navigateur du client résout l'adresse DNS via Amazon Route 53 (ou un fournisseur alternatif) vers la distribution globale **AWS CloudFront**. CloudFront gère la terminaison SSL (HTTPS).
+2. **Gestion du cache** :
+   * Si la requête pointe vers les ressources statiques générées par Next.js (ex: `/_next/static/*`), CloudFront la sert instantanément depuis la mémoire cache locale (Edge Location), réduisant la latence à quelques millisecondes.
+   * Si la requête concerne du contenu dynamique (création de sondage, soumission de vote, flux SSE `/api/polls/[id]/stream`), la requête contourne le cache et est transmise à l'**Application Load Balancer (ALB)**.
+3. **Répartition du trafic** : L'ALB reçoit la requête et la répartit sur les conteneurs Next.js sains hébergés sur **Amazon ECS Fargate** au sein des sous-réseaux privés du VPC.
+4. **Persistance et Alertes** : L'application interagit avec les tables **Amazon DynamoDB** et envoie des alertes de vote en appelant l'API d'**Amazon SES**.
 
 ---
 
-## 2. Description Détaillée des Modules Terraform
+## 2. Analyse Détaillée du Réseau (Networking VPC)
 
-L'infrastructure est modulaire et divisée en 7 composants réutilisables sous `infrastructure/modules/` :
+Le réseau constitue le socle de sécurité de l'application. Le module `networking` provisionne un **VPC (Virtual Private Cloud)** isolé avec les caractéristiques suivantes :
 
-### A. Réseau et Connectivité (`networking`)
-Ce module configure l'environnement VPC (Virtual Private Cloud) isolé.
-* **VPC** : Segment réseau `/16` (ex: `10.0.0.0/16`) réparti sur 2 zones de disponibilité (AZ) pour la haute disponibilité.
-* **Sous-réseaux Publics** : Deux sous-réseaux associés à une passerelle Internet (Internet Gateway). Ils hébergent l'ALB public.
-* **Sous-réseaux Privés** : Deux sous-réseaux sécurisés sans route directe vers Internet. Ils hébergent les tâches ECS Fargate.
-* **NAT Gateway / Internet Egress** : Une NAT Gateway est déployée dans le sous-réseau public pour permettre aux conteneurs ECS privés de télécharger des dépendances (ex: SDK AWS, bibliothèques Node) ou d'appeler des API tierces en toute sécurité.
-
-### B. Registre de Conteneurs (`ecr`)
-Héberge les images Docker de l'application Next.js.
-* **Dépôt ECR** : Chiffrement des images au repos activé.
-* **Règle de Cycle de Vie (Lifecycle Policy)** : Pour éviter les coûts de stockage inutiles, seules les 10 dernières images de conteneur sont conservées. Les images orphelines et non marquées (untagged) sont nettoyées automatiquement après 24 heures.
-
-### C. Base de Données NoSQL (`dynamodb`)
-Stocke l'état persistant de QuickPoll avec des performances à faible latence (quelques millisecondes).
-* **Table `quickpoll-polls`** : Stocke les métadonnées des sondages. Clé de partition (`HASH`) : `id` (String).
-* **Table `quickpoll-votes`** : Stocke les bulletins de vote. Clé de partition (`HASH`) : `pollId` (String), Clé de tri (`RANGE`) : `voterId` (String). Cette structure garantit qu'un votant ne peut voter qu'une seule fois par sondage grâce à la contrainte d'unicité de la clé primaire composée.
-* **Fonctionnalités activées** :
-  * **TTL (Time To Live)** : Supprime automatiquement les données expirées (si configuré) pour optimiser le stockage.
-  * **Point-in-Time Recovery (PITR)** : Permet de restaurer les tables à n'importe quelle seconde des 35 derniers jours (protection contre les suppressions accidentelles).
-  * **Chiffrement par défaut (SSE)** : Données chiffrées au repos à l'aide de clés gérées par AWS (KMS).
-
-### D. Service de Conteneurs (`ecs`)
-Gère l'exécution des conteneurs sans serveur grâce à AWS Fargate.
-* **Cluster ECS** : Regroupement logique des services avec Container Insights activé pour le monitoring CloudWatch.
-* **Définition de Tâche (Task Definition)** :
-  * Spécifie la configuration CPU (512 Mo / 0.5 vCPU) et Mémoire (1024 Mo) par tâche.
-  * Injecte les variables d'environnement nécessaires : `NODE_ENV`, `AWS_REGION`, `DYNAMODB_POLLS_TABLE`, `DYNAMODB_VOTES_TABLE`, `CREATOR_JWT_SECRET`, et `SES_FROM_EMAIL`.
-* **Service ECS** :
-  * Exécute les tâches sur AWS Fargate.
-  * Maintient le nombre de conteneurs souhaité (Desired Count = 2 pour la redondance géographique).
-  * Politique de déploiement progressif (Rolling Update) avec un minimum de 50% de tâches saines et un maximum de 200% pendant le déploiement pour garantir l'absence de coupure de service.
-
-### E. Répartiteur de Charge (`alb`)
-* **Application Load Balancer** : Public, déployé dans les sous-réseaux publics des 2 AZ.
-* **Target Group** : Dirige le trafic HTTP vers le port `3000` des conteneurs Fargate. Il effectue des vérifications de santé (Health Checks) sur la route `/` pour isoler automatiquement les conteneurs défaillants.
-* **Sécurité** : Un groupe de sécurité (Security Group) restreint les connexions entrantes sur l'ALB au trafic HTTP (port 80) et HTTPS (port 443).
-
-### F. Distribution de Contenu (`cloudfront`)
-* **Distribution CloudFront** : Utilise l'ALB comme origine principale.
-* **Optimisation de la mise en cache** :
-  * Comportement par défaut : Ne met pas en cache les pages dynamiques (`default_cache_behavior` configuré avec des TTL min/max/default à 0 et transfert de tous les en-têtes/cookies pour conserver la logique de session Next.js).
-  * Comportement ciblé sur le dossier statique Next.js (`/_next/static/*`) : Cache les fichiers statiques de build pendant 1 an (`max_ttl = 31536000`) pour alléger la charge sur l'ALB et réduire le temps de chargement pour les utilisateurs finaux.
-* **Sécurité SSL** : Redirige automatiquement le trafic HTTP vers HTTPS. Supporte le chargement d'un certificat ACM personnalisé.
-
-### G. Service d'Envoi d'Emails (`ses`)
-* Gère l'envoi d'e-mails de notification (ex: alerte lors du premier vote sur un sondage).
-* L'adresse d'expédition est configurée via la variable `ses_from_email`.
-* Intégré au rôle IAM de tâche ECS pour autoriser uniquement les actions de messagerie autorisées.
+* **VPC CIDR Block** : Défini à `10.0.0.0/16` (permettant jusqu'à 65 536 adresses IP privées).
+* **Zones de Disponibilité (AZ - Availability Zones)** : Réparti sur deux zones physiques distinctes (par exemple, `eu-west-1a` et `eu-west-1b`) afin d'éviter tout point de défaillance unique (Single Point of Failure).
+* **Sous-réseaux Publics (Public Subnets)** :
+  * Deux sous-réseaux `/24` (ex: `10.0.1.0/24` et `10.0.2.0/24`).
+  * Associés à une **Internet Gateway (IGW)** pour permettre le trafic entrant et sortant.
+  * Hébergent uniquement l'**Application Load Balancer (ALB)** public et la **NAT Gateway**.
+* **Sous-réseaux Privés (Private Subnets)** :
+  * Deux sous-réseaux `/24` (ex: `10.0.3.0/24` et `10.0.4.0/24`).
+  * N'ont aucune route vers l'Internet Gateway publique.
+  * Hébergent les conteneurs applicatifs **AWS ECS Fargate**.
+* **NAT Gateway & Table de Routage** :
+  * Une NAT Gateway (Network Address Translation) est déployée dans un sous-réseau public.
+  * Les sous-réseaux privés sont configurés avec une table de routage redirigeant le trafic sortant (`0.0.0.0/0`) vers cette NAT Gateway.
+  * **Intérêt** : Permet aux conteneurs privés d'initier des connexions sortantes (téléchargement de patchs, appels d'API externes, SDK AWS) tout en interdisant à toute entité extérieure d'initier une connexion directe vers les conteneurs.
 
 ---
 
-## 3. Sécurité et Moindre Privilège
+## 3. Modules Terraform Applicatifs
 
-La sécurité est intégrée par défaut dans chaque couche de l'infrastructure :
+Chaque composant technique de QuickPoll est encapsulé dans un module Terraform réutilisable situé sous `infrastructure/modules/` :
 
-### Réseau Privé :
-Les conteneurs ECS Fargate sont situés dans des sous-réseaux privés. Ils n'ont pas d'adresse IP publique et ne sont pas accessibles directement depuis Internet. Le seul point d'entrée autorisé vers les tâches Fargate est l'ALB via son groupe de sécurité (`ecs-sg` n'autorise que le trafic provenant de `alb-sg`).
+### A. Dépôt de Conteneurs (Amazon ECR)
+Le module `ecr` provisionne un registre privé sécurisé pour stocker les images Docker.
+* **Chiffrement** : Les images sont chiffrées au repos par défaut (`AES256`).
+* **Politique de cycle de vie (Lifecycle Policy)** : Pour optimiser les coûts de stockage, Terraform configure une règle qui supprime automatiquement les anciennes images et ne conserve que les **10 builds les plus récents**. Les images non marquées sont purgées après 24 heures.
 
-### Rôles IAM Distincts :
-1. **Rôle d'Exécution ECS (ECS Execution Role)** : Utilisé par l'agent ECS pour démarrer la tâche (télécharger l'image depuis ECR, envoyer les journaux vers CloudWatch Logs).
-2. **Rôle de Tâche ECS (ECS Task Role)** : Utilisé par le code de l'application elle-même pendant son exécution. Conformément au principe du moindre privilège, il ne possède que les droits suivants :
-   * **DynamoDB** : `GetItem`, `PutItem`, `UpdateItem`, `Query` sur les deux tables QuickPoll uniquement (et leurs index globaux).
-   * **SES** : `SendEmail` et `SendRawEmail` sur toutes les ressources pour permettre l'envoi de notifications de premier vote.
+### B. Base de Données NoSQL (Amazon DynamoDB)
+Le module `dynamodb` crée les deux tables requises par l'application :
+1. **Table `quickpoll-polls`** :
+   * Clé de partition (`HASH`) : `id` (String).
+   * Contient les métadonnées et la configuration du sondage.
+2. **Table `quickpoll-votes`** :
+   * Clé de partition (`HASH`) : `pollId` (String).
+   * Clé de tri (`RANGE`) : `voterId` (String).
+   * **Intérêt de la clé composée** : Cette configuration garantit l'unicité de la paire `(pollId, voterId)`. Si un utilisateur tente de voter deux fois pour le même sondage, DynamoDB rejette l'écriture, empêchant de manière robuste le double vote au niveau de la base de données.
+* **Options de Résilience** :
+  * **Point-in-Time Recovery (PITR)** : Activé. Permet de restaurer les tables à n'importe quelle seconde près au cours des 35 derniers jours en cas de corruption de données ou de mauvaise manipulation logicielle.
+  * **Time To Live (TTL)** : Configuré sur l'attribut `expiresAt` pour supprimer automatiquement les données obsolètes après dépassement de la date de fin (optimisation des coûts de stockage).
+
+### C. Orchestration Sans Serveur (Amazon ECS Fargate)
+Le module `ecs` gère l'exécution des conteneurs sans provisionner ni administrer de serveurs EC2.
+* **Fargate (Serverless)** : AWS se charge d'allouer la puissance CPU (0.5 vCPU) et mémoire (1 Go) définie pour chaque tâche.
+* **Réseau Privé & Sécurité** : Les tâches ECS sont provisionnées dans les sous-réseaux privés. Leur groupe de sécurité (`ecs-sg`) bloque tout trafic entrant, **sauf** les requêtes provenant directement du groupe de sécurité de l'ALB (`alb-sg`) sur le port `3000`.
+* **Haute Disponibilité** : Le service ECS maintient en permanence un compte ciblé (Desired Count) de **2 tâches saines**, réparties de manière équilibrée sur les deux zones de disponibilité physiques.
+* **Déploiement Progressif (Rolling Updates)** :
+  * `minimum_healthy_percent = 50` : Durant une mise à jour applicative, au moins 1 conteneur reste actif pour servir les clients.
+  * `maximum_percent = 200` : ECS peut instancier jusqu'à 4 conteneurs simultanément pendant la phase de transition avant de détruire les anciens conteneurs.
+
+### D. Répartition de Charge (Application Load Balancer)
+Le module `alb` fait office de passerelle d'entrée.
+* **Target Group & Health Check** : Il effectue périodiquement (toutes les 30 secondes) un appel HTTP GET sur la racine `/` des conteneurs. Si un conteneur ne répond pas avec un code HTTP 200 (par exemple en cas de crash de la boucle d'événements Node.js), l'ALB le déclare insain (unhealthy) et cesse immédiatement de lui envoyer du trafic. Un nouveau conteneur sain est instancié en parallèle par ECS pour le remplacer.
+
+### E. Diffusion Globale et Caching (AWS CloudFront CDN)
+Le module `cloudfront` optimise la vitesse d'affichage de QuickPoll dans le monde entier.
+* **Caching intelligent** :
+  * Les fichiers de compilation statique Next.js (`/_next/static/*` et `/public/*`) ont une politique de cache de longue durée (TTL d'un an). Les requêtes n'atteignent jamais nos conteneurs ECS, ce qui réduit considérablement les coûts de calcul.
+  * Les requêtes dynamiques (`/api/*`, `/poll/[id]`, etc.) sont acheminées instantanément vers l'ALB sans mise en cache.
+* **Sécurité SSL/TLS** : CloudFront force l'utilisation du protocole HTTPS (redirection automatique des requêtes HTTP port 80).
+
+### F. Service de Messagerie (Amazon SES)
+Le module `ses` configure AWS Simple Email Service pour l'envoi fiable de notifications e-mail lors du premier vote sur un sondage.
+* Le rôle IAM de tâche ECS dispose de l'autorisation d'appeler l'API de messagerie SES pour envoyer des emails.
 
 ---
 
-## 4. Déploiement et Commandes de l'Infrastructure
+## 4. Sécurité IAM et Politique de Moindre Privilège
 
-### Prérequis
-* Avoir installé Terraform (`>= 1.5.0`).
-* Être authentifié sur un compte AWS avec des identifiants valides possédant les droits d'administration de ces ressources.
+Pour se conformer au principe du moindre privilège, les conteneurs de QuickPoll utilisent deux rôles IAM bien distincts :
 
-### Étape 1 : Initialisation
-Initialise le répertoire, télécharge les modules et les plugins requis (fournisseur AWS).
+1. **Rôle d'Exécution ECS (ECS Task Execution Role)** :
+   * Utilisé par l'agent AWS ECS sous-jacent (en dehors du conteneur).
+   * **Autorisations** : Téléchargement de l'image Docker depuis Amazon ECR, écriture des logs applicatifs vers AWS CloudWatch.
+2. **Rôle de Tâche ECS (ECS Task Role)** :
+   * Utilisé directement par le code de l'application Next.js (au sein du conteneur).
+   * **Autorisations limitées aux ressources applicatives** :
+     * Lecture/écriture uniquement sur les deux tables DynamoDB `quickpoll-polls` et `quickpoll-votes`.
+     * Envoi d'emails via AWS SES (action `ses:SendEmail` et `ses:SendRawEmail`).
+     * Aucune autre ressource AWS (comme des seaux S3 ou d'autres bases de données) n'est accessible par ce rôle.
+
+---
+
+## 5. Guide des Commandes Terraform
+
+L'infrastructure peut être déployée ou modifiée manuellement à l'aide des commandes standard de l'outil Terraform.
+
+### 1. Initialiser le projet
+Télécharge les plugins des fournisseurs (AWS) et configure le backend de stockage d'état Terraform.
 ```bash
 cd infrastructure
 terraform init
 ```
 
-### Étape 2 : Planification
-Visualise les modifications qui seront apportées à l'infrastructure AWS. Renseignez la variable sensible `creator_jwt_secret` (clé secrète pour signer les jetons de gestion des créateurs) et l'e-mail expéditeur optionnel SES.
+### 2. Planifier le déploiement
+Génère et affiche le plan d'exécution des modifications sans les appliquer. Vous devez renseigner la variable `creator_jwt_secret` (clé secrète pour chiffrer les jetons d'administration des sondages).
 ```bash
-terraform plan -var="creator_jwt_secret=VOTRE_CLE_SECRETE_MIN_32_CHARS" -var="ses_from_email=noreply@votre-domaine.com"
+terraform plan \
+  -var="creator_jwt_secret=VOTRE_CLE_SECRETE_MIN_32_CHARS" \
+  -var="ses_from_email=noreply@votre-domaine.com"
 ```
 
-### Étape 3 : Application
-Déploie l'infrastructure sur AWS.
+### 3. Appliquer les modifications
+Provisionne les ressources réelles sur AWS.
 ```bash
-terraform apply -var="creator_jwt_secret=VOTRE_CLE_SECRETE_MIN_32_CHARS" -var="ses_from_email=noreply@votre-domaine.com"
+terraform apply \
+  -var="creator_jwt_secret=VOTRE_CLE_SECRETE_MIN_32_CHARS" \
+  -var="ses_from_email=noreply@votre-domaine.com"
 ```
 
-### Étape 4 : Déploiement d'une nouvelle version de l'application
-Le déploiement de l'application se fait via la pipeline CI/CD automatisée dans GitHub Actions (voir `.github/workflows/deploy.yml`). Cependant, vous pouvez aussi mettre à jour l'image de conteneur manuellement en changeant la variable `image_tag` dans Terraform :
+### 4. Détruire l'infrastructure
+Supprime l'intégralité des ressources provisionnées sur AWS (Utile en fin de cycle de vie ou pour le nettoyage de tests).
 ```bash
-terraform apply -var="creator_jwt_secret=VOTRE_CLE_SECRETE_MIN_32_CHARS" -var="image_tag=VOTRE_COMMIT_SHA"
+terraform destroy
 ```
+
+---
+
+## 6. Pipeline CI/CD Automatisé (GitHub Actions)
+
+QuickPoll implémente une automatisation complète des phases de test et de déploiement à l'aide de deux workflows GitHub Actions distincts.
+
+### Intégration Continue (CI - `.github/workflows/ci.yml`)
+Déclenché à chaque ouverture de Pull Request vers les branches `main` et `develop`.
+* **Étape 1 : Lint & Test** : Exécute Vitest et ESLint pour valider la qualité logique et syntaxique du code TypeScript/Next.js.
+* **Étape 2 : Build de validation** : Compile l'application Next.js pour s'assurer que le compilateur ne lève aucune erreur de type.
+* **Étape 3 : Scan de vulnérabilités Docker (Trivy)** : Compile l'image Docker localement dans l'agent GitHub et l'analyse avec **Trivy** pour s'assurer de l'absence de packages système ou de modules NPM vulnérables (critiques ou à haute sévérité).
+
+### Déploiement Continu (CD - `.github/workflows/deploy.yml`)
+Déclenché automatiquement lors d'un push ou d'une fusion (merge) sur la branche `main`.
+* **Étape 1 : Authentification OIDC** : GitHub s'authentifie temporairement auprès du compte AWS en utilisant OpenID Connect (OIDC) pour éviter d'avoir à stocker des clés d'accès AWS permanentes et risquées dans les secrets GitHub.
+* **Étape 2 : ECR Login & Build** : Se connecte au registre ECR privé d'AWS, compile l'image de production Docker et la pousse avec deux tags : le SHA du commit GitHub actuel et le tag `latest`.
+* **Étape 3 : Déploiement ECS progressif** : Appelle la commande AWS CLI pour forcer un nouveau déploiement sur le service ECS Fargate. Fargate télécharge la nouvelle image Docker, instancie les nouveaux conteneurs, s'assure qu'ils passent le Health Check de l'ALB, puis éteint progressivement les anciens conteneurs sans aucune interruption de service.
+* **Étape 4 : Attente de stabilité** : Le workflow attend la confirmation que le service ECS est stabilisé et s'assure que la mise à jour s'est déroulée avec succès.
