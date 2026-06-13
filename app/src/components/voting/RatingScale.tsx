@@ -16,7 +16,7 @@ export function RatingScale({
           type="button"
           onClick={() => onChange(n)}
           className="text-5xl transition-transform hover:scale-110"
-          style={{ color: value !== null && n <= value ? "#F59E0B" : "#3f3f46" }}
+          style={{ color: value !== null && n <= value ? "#F59E0B" : "var(--border-subtle)" }}
           aria-label={`${n} stars`}
         >
           ★
