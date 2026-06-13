@@ -38,7 +38,7 @@ export function ResultsBreakdown({
   return (
     <div className="space-y-4">
       {results.ratingAverage !== undefined && (
-        <p className="text-lg font-semibold text-zinc-200">
+        <p className="text-lg font-semibold text-[var(--text-primary)]">
           Average: {results.ratingAverage.toFixed(1)} / 5
         </p>
       )}

@@ -13,7 +13,7 @@ export function PasswordGate({ onUnlock }: { onUnlock: (p: string) => void }) {
     <Card className="mx-auto max-w-md space-y-4 text-center">
       <div className="text-4xl">🔒</div>
       <h2 className="font-display text-xl font-semibold">Protected poll</h2>
-      <p className="text-sm text-zinc-500">Enter the password to vote</p>
+      <p className="text-sm text-[var(--text-muted)]">Enter the password to vote</p>
       <form
         className="space-y-3"
         onSubmit={(e) => {

@@ -68,8 +68,8 @@ export function DangerZone({
         onOpenChange={setConfirmOpen}
         title="Confirm deletion"
       >
-        <p className="text-sm text-zinc-400">
-          Type <strong className="text-zinc-200">{pollTitle}</strong> to confirm.
+        <p className="text-sm text-[var(--text-secondary)]">
+          Type <strong className="text-[var(--text-primary)]">{pollTitle}</strong> to confirm.
         </p>
         <Input
           className="mt-4"

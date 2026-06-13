@@ -127,10 +127,10 @@ export function PollCreator() {
         <Badge tone="violet" className="mb-4">
           ✦ No account required
         </Badge>
-        <h1 className="font-display text-4xl font-bold tracking-tight text-zinc-50 sm:text-5xl">
+        <h1 className="font-display text-4xl font-bold tracking-tight text-[var(--text-primary)] sm:text-5xl">
           Create a poll in seconds
         </h1>
-        <p className="mt-3 text-zinc-400">
+        <p className="mt-3 text-[var(--text-secondary)]">
           Share the link. Get instant results. No sign-up needed.
         </p>
       </section>
@@ -138,7 +138,7 @@ export function PollCreator() {
       <form onSubmit={handleSubmit}>
         <Card className="space-y-8">
           <div>
-            <p className="mb-3 text-xs font-medium uppercase tracking-wider text-zinc-500">
+            <p className="mb-3 text-xs font-medium uppercase tracking-wider text-[var(--text-label)]">
               Poll type
             </p>
             <PollTypeSelector value={type} onChange={setType} />
@@ -167,7 +167,7 @@ export function PollCreator() {
           </div>
 
           <div>
-            <p className="mb-2 text-xs font-medium uppercase tracking-wider text-zinc-500">
+            <p className="mb-2 text-xs font-medium uppercase tracking-wider text-[var(--text-label)]">
               Accent color
             </p>
             <div className="flex gap-2">
@@ -176,7 +176,7 @@ export function PollCreator() {
                   key={c}
                   type="button"
                   onClick={() => setAccentColor(c)}
-                  className={`size-8 rounded-full ring-2 ring-offset-2 ring-offset-zinc-900 ${
+                  className={`qp-ring-offset size-8 rounded-full ring-2 ring-offset-2 ${
                     accentColor === c ? "ring-violet-500" : "ring-transparent"
                   }`}
                   style={{ backgroundColor: c }}
@@ -207,7 +207,7 @@ export function PollCreator() {
             >
               {loading ? "Creating…" : "Create Poll →"}
             </Button>
-            <p className="mt-3 text-center text-xs text-zinc-500">
+            <p className="mt-3 text-center text-xs text-[var(--text-muted)]">
               Your poll creator link will appear after creation.
             </p>
           </div>

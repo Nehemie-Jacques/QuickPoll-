@@ -30,13 +30,13 @@ export function ManageLayout({
         <Badge tone={statusTone} className="mb-4">
           {status}
         </Badge>
-        <p className="text-xs text-zinc-500">
+        <p className="text-xs text-[var(--text-muted)]">
           Created {new Date(poll.createdAt).toLocaleDateString()}
         </p>
-        <p className="mt-1 font-display text-2xl font-bold text-zinc-50">
+        <p className="mt-1 font-display text-2xl font-bold text-[var(--text-primary)]">
           {poll.totalVotes}
         </p>
-        <p className="text-xs text-zinc-500">total votes</p>
+        <p className="text-xs text-[var(--text-muted)]">total votes</p>
 
         <Tabs.List className="mt-8 flex flex-row gap-1 overflow-x-auto lg:flex-col lg:gap-0">
           {[
@@ -48,7 +48,7 @@ export function ManageLayout({
             <Tabs.Trigger
               key={t.value}
               value={t.value}
-              className="rounded-lg px-3 py-2 text-left text-sm text-zinc-400 data-[state=active]:bg-zinc-800 data-[state=active]:text-zinc-100 lg:w-full"
+              className="rounded-lg px-3 py-2 text-left text-sm text-[var(--text-secondary)] data-[state=active]:bg-[var(--bg-elevated)] data-[state=active]:text-[var(--text-primary)] lg:w-full"
             >
               {t.label}
             </Tabs.Trigger>

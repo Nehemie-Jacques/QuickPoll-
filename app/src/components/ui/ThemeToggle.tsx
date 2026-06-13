@@ -38,7 +38,7 @@ export function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <span className="inline-block size-10 rounded-lg border border-zinc-700" />
+      <span className="inline-block size-10 rounded-lg border border-[var(--border-subtle)]" />
     );
   }
 

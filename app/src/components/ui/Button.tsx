@@ -5,9 +5,8 @@ type Variant = "primary" | "cta" | "secondary" | "ghost" | "danger";
 const variants: Record<Variant, string> = {
   primary: "qp-btn-primary font-medium",
   cta: "qp-btn-cta font-semibold",
-  secondary:
-    "border border-zinc-700 bg-transparent text-zinc-200 hover:bg-zinc-800",
-  ghost: "border border-zinc-700 bg-transparent text-zinc-300 hover:bg-zinc-800/80",
+  secondary: "qp-btn-secondary font-medium",
+  ghost: "qp-btn-ghost",
   danger: "bg-red-600 text-white hover:bg-red-500",
 };
 

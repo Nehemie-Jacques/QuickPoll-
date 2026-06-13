@@ -6,7 +6,7 @@ export function Input({
 }: InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
-      className={`qp-input w-full px-4 py-3 text-sm placeholder:text-zinc-500 ${className}`}
+      className={`qp-input w-full px-4 py-3 text-sm ${className}`}
       {...props}
     />
   );
@@ -18,7 +18,7 @@ export function Textarea({
 }: TextareaHTMLAttributes<HTMLTextAreaElement>) {
   return (
     <textarea
-      className={`qp-input w-full resize-none px-4 py-3 text-sm placeholder:text-zinc-500 ${className}`}
+      className={`qp-input w-full resize-none px-4 py-3 text-sm ${className}`}
       {...props}
     />
   );

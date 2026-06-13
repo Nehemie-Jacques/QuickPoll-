@@ -53,11 +53,11 @@ function StatCard({
         key={value}
         initial={{ scale: 1.1 }}
         animate={{ scale: 1 }}
-        className={`mt-2 font-display font-bold text-zinc-50 ${small ? "truncate text-sm" : "text-2xl"}`}
+        className={`mt-2 font-display font-bold text-[var(--text-primary)] ${small ? "truncate text-sm" : "text-2xl"}`}
       >
         {value}
       </motion.p>
-      <p className="mt-1 text-xs uppercase tracking-wider text-zinc-500">
+      <p className="mt-1 text-xs uppercase tracking-wider text-[var(--text-muted)]">
         {label}
       </p>
     </Card>

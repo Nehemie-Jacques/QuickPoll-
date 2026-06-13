@@ -25,10 +25,10 @@ export function ExpirationPicker({
 }) {
   return (
     <div className="space-y-3">
-      <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">
+      <p className="text-xs font-medium uppercase tracking-wider text-[var(--text-label)]">
         Expiration
       </p>
-      <div className="flex flex-wrap gap-1 rounded-lg bg-zinc-900 p-1">
+      <div className="flex flex-wrap gap-1 rounded-lg border border-[var(--border-card)] bg-[var(--bg-elevated)] p-1">
         {PRESETS.map((p) => (
           <button
             key={p.value}
@@ -37,7 +37,7 @@ export function ExpirationPicker({
             className={`rounded-md px-3 py-1.5 text-xs font-medium transition ${
               expiration === p.value
                 ? "bg-violet-600 text-white"
-                : "text-zinc-400 hover:text-zinc-200"
+                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
             }`}
           >
             {p.label}

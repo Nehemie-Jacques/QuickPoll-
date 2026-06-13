@@ -1,10 +1,14 @@
 @import "tailwindcss";
 
+/* ──────────────────────────────────────────
+   DARK MODE (default)
+────────────────────────────────────────── */
 :root {
   --bg-primary: #09090b;
   --bg-surface: #18181b;
   --bg-elevated: #27272a;
   --border-subtle: #3f3f46;
+  --border-card: #27272a;
   --brand: #7c3aed;
   --brand-light: #a78bfa;
   --cta: #f97316;
@@ -12,6 +16,8 @@
   --text-primary: #fafafa;
   --text-secondary: #a1a1aa;
   --text-muted: #52525b;
+  --text-label: #a1a1aa;
+  --text-placeholder: #52525b;
   --success: #10b981;
   --error: #ef4444;
   --warning: #f59e0b;
@@ -19,6 +25,51 @@
   --gradient-cta: linear-gradient(135deg, #f97316, #ea580c);
   --shadow-card: 0 0 0 1px rgba(255, 255, 255, 0.06), 0 4px 24px rgba(0, 0, 0, 0.4);
   --glow-violet: 0 0 0 2px #7c3aed, 0 0 20px rgba(124, 58, 237, 0.3);
+  --btn-secondary-bg: transparent;
+  --btn-secondary-border: #3f3f46;
+  --btn-secondary-text: #e4e4e7;
+  --btn-secondary-hover: #27272a;
+  --btn-ghost-border: #3f3f46;
+  --btn-ghost-text: #d4d4d8;
+  --btn-ghost-hover: rgba(39, 39, 42, 0.8);
+  --ring-offset-color: #09090b;
+  --skeleton-mid: #3f3f46;
+  --badge-muted-bg: #27272a;
+  --badge-muted-text: #a1a1aa;
+  --badge-muted-border: #3f3f46;
+}
+
+/* ──────────────────────────────────────────
+   LIGHT MODE
+────────────────────────────────────────── */
+html.light {
+  color-scheme: light;
+  --bg-primary: #f4f4f5;
+  --bg-surface: #ffffff;
+  --bg-elevated: #f4f4f5;
+  --border-subtle: #d4d4d8;
+  --border-card: #e4e4e7;
+  --brand: #6d28d9;
+  --brand-light: #7c3aed;
+  --text-primary: #18181b;
+  --text-secondary: #52525b;
+  --text-muted: #71717a;
+  --text-label: #52525b;
+  --text-placeholder: #a1a1aa;
+  --shadow-card: 0 0 0 1px rgba(0, 0, 0, 0.06), 0 4px 24px rgba(0, 0, 0, 0.08);
+  --glow-violet: 0 0 0 2px #7c3aed, 0 0 16px rgba(124, 58, 237, 0.15);
+  --btn-secondary-bg: #ffffff;
+  --btn-secondary-border: #d4d4d8;
+  --btn-secondary-text: #27272a;
+  --btn-secondary-hover: #f4f4f5;
+  --btn-ghost-border: #d4d4d8;
+  --btn-ghost-text: #3f3f46;
+  --btn-ghost-hover: #e4e4e7;
+  --ring-offset-color: #ffffff;
+  --skeleton-mid: #d4d4d8;
+  --badge-muted-bg: #f4f4f5;
+  --badge-muted-text: #52525b;
+  --badge-muted-border: #d4d4d8;
 }
 
 @theme inline {
@@ -37,36 +88,6 @@ html {
   color-scheme: dark;
 }
 
-html.light {
-  color-scheme: light;
-  --bg-primary: #fafafa;
-  --bg-surface: #ffffff;
-  --bg-elevated: #f4f4f5;
-  --border-subtle: #e4e4e7;
-  --text-primary: #18181b;
-  --text-secondary: #52525b;
-  --text-muted: #a1a1aa;
-  --shadow-card: 0 0 0 1px rgba(0, 0, 0, 0.06), 0 4px 24px rgba(0, 0, 0, 0.08);
-  --glow-violet: 0 0 0 2px #7c3aed, 0 0 16px rgba(124, 58, 237, 0.15);
-}
-
-html.light .qp-card {
-  border-color: #e4e4e7;
-}
-
-html.light .qp-option-selected {
-  background: rgba(124, 58, 237, 0.06);
-}
-
-html.light .qp-skeleton {
-  background: linear-gradient(
-    90deg,
-    var(--bg-elevated) 25%,
-    #e4e4e7 50%,
-    var(--bg-elevated) 75%
-  );
-}
-
 body {
   background: var(--bg-primary);
   color: var(--text-primary);
@@ -81,9 +102,12 @@ body {
   font-family: var(--font-mono-jb), ui-monospace, monospace;
 }
 
+/* ──────────────────────────────────────────
+   CARD
+────────────────────────────────────────── */
 .qp-card {
   background: var(--bg-surface);
-  border: 1px solid #27272a;
+  border: 1px solid var(--border-card);
   border-radius: 16px;
   box-shadow: var(--shadow-card);
 }
@@ -92,6 +116,9 @@ body {
   border-color: var(--border-subtle);
 }
 
+/* ──────────────────────────────────────────
+   GRADIENT TEXT
+────────────────────────────────────────── */
 .qp-gradient-text {
   background: var(--gradient-brand);
   -webkit-background-clip: text;
@@ -99,6 +126,9 @@ body {
   background-clip: text;
 }
 
+/* ──────────────────────────────────────────
+   BUTTONS
+────────────────────────────────────────── */
 .qp-btn-primary {
   background: var(--gradient-brand);
   color: white;
@@ -121,11 +151,42 @@ body {
   transform: scale(1.02);
 }
 
+.qp-btn-secondary {
+  background: var(--btn-secondary-bg);
+  border: 1px solid var(--btn-secondary-border);
+  color: var(--btn-secondary-text);
+  border-radius: 10px;
+  transition: background 0.15s ease;
+}
+
+.qp-btn-secondary:hover:not(:disabled) {
+  background: var(--btn-secondary-hover);
+}
+
+.qp-btn-ghost {
+  background: transparent;
+  border: 1px solid var(--btn-ghost-border);
+  color: var(--btn-ghost-text);
+  border-radius: 10px;
+  transition: background 0.15s ease;
+}
+
+.qp-btn-ghost:hover:not(:disabled) {
+  background: var(--btn-ghost-hover);
+}
+
+/* ──────────────────────────────────────────
+   INPUT
+────────────────────────────────────────── */
 .qp-input {
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   border-radius: 10px;
   color: var(--text-primary);
+}
+
+.qp-input::placeholder {
+  color: var(--text-placeholder);
 }
 
 .qp-input:focus {
@@ -134,6 +195,9 @@ body {
   border-color: var(--brand);
 }
 
+/* ──────────────────────────────────────────
+   SELECTED OPTION
+────────────────────────────────────────── */
 .qp-option-selected {
   border: 2px solid var(--brand);
   box-shadow: var(--glow-violet);
@@ -141,6 +205,13 @@ body {
   background: rgba(124, 58, 237, 0.08);
 }
 
+html.light .qp-option-selected {
+  background: rgba(124, 58, 237, 0.06);
+}
+
+/* ──────────────────────────────────────────
+   PROGRESS BAR
+────────────────────────────────────────── */
 .qp-progress-track {
   height: 6px;
   border-radius: 999px;
@@ -155,6 +226,9 @@ body {
   transition: width 600ms ease-out;
 }
 
+/* ──────────────────────────────────────────
+   SKELETON LOADER
+────────────────────────────────────────── */
 @keyframes qp-shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
@@ -164,13 +238,16 @@ body {
   background: linear-gradient(
     90deg,
     var(--bg-elevated) 25%,
-    #3f3f46 50%,
+    var(--skeleton-mid) 50%,
     var(--bg-elevated) 75%
   );
   background-size: 200% 100%;
   animation: qp-shimmer 1.5s infinite;
 }
 
+/* ──────────────────────────────────────────
+   ANIMATIONS
+────────────────────────────────────────── */
 @keyframes qp-fade-in {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
@@ -197,4 +274,11 @@ body {
 
 .qp-shake {
   animation: qp-shake 0.35s ease;
+}
+
+/* ──────────────────────────────────────────
+   ACCENT COLOR RING (light mode fix)
+────────────────────────────────────────── */
+.qp-ring-offset {
+  --tw-ring-offset-color: var(--ring-offset-color);
 }

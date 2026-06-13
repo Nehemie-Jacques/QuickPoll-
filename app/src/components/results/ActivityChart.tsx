@@ -18,7 +18,7 @@ export function ActivityChart({
   accentColor: string;
 }) {
   if (activity.length === 0) {
-    return <p className="text-sm text-zinc-500">No activity yet</p>;
+    return <p className="text-sm text-[var(--text-muted)]">No activity yet</p>;
   }
 
   const cumulative = activity.reduce<{ timestamp: string; count: number }[]>(
@@ -31,7 +31,7 @@ export function ActivityChart({
   );
 
   return (
-    <div className="h-52 w-full rounded-xl bg-zinc-900/80 p-2">
+    <div className="h-52 w-full rounded-xl border border-[var(--border-card)] bg-[var(--bg-elevated)] p-2">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={cumulative}>
           <defs>
@@ -40,13 +40,14 @@ export function ActivityChart({
               <stop offset="100%" stopColor="#7C3AED" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <XAxis dataKey="timestamp" tick={{ fill: "#71717a", fontSize: 10 }} />
-          <YAxis allowDecimals={false} tick={{ fill: "#71717a", fontSize: 10 }} width={28} />
+          <XAxis dataKey="timestamp" tick={{ fill: "var(--text-secondary)", fontSize: 10 }} />
+          <YAxis allowDecimals={false} tick={{ fill: "var(--text-secondary)", fontSize: 10 }} width={28} />
           <Tooltip
             contentStyle={{
-              background: "#18181b",
-              border: "1px solid #3f3f46",
+              background: "var(--bg-surface)",
+              border: "1px solid var(--border-card)",
               borderRadius: 8,
+              color: "var(--text-primary)",
             }}
           />
           <Area

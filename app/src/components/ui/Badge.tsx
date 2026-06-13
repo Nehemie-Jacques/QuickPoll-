@@ -3,11 +3,12 @@ import type { ReactNode } from "react";
 type Tone = "violet" | "live" | "muted" | "warning" | "gold";
 
 const tones: Record<Tone, string> = {
-  violet: "bg-violet-600/20 text-violet-300 border-violet-500/30",
-  live: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
-  muted: "bg-zinc-800 text-zinc-400 border-zinc-700",
-  warning: "bg-amber-500/15 text-amber-400 border-amber-500/30",
-  gold: "bg-amber-500/20 text-amber-300 border-amber-500/40",
+  violet: "bg-violet-600/20 text-violet-600 border-violet-500/30 dark:text-violet-300",
+  live: "bg-emerald-500/15 text-emerald-600 border-emerald-500/30 dark:text-emerald-400",
+  muted:
+    "bg-[var(--badge-muted-bg)] text-[var(--badge-muted-text)] border-[var(--badge-muted-border)]",
+  warning: "bg-amber-500/15 text-amber-600 border-amber-500/30 dark:text-amber-400",
+  gold: "bg-amber-500/20 text-amber-600 border-amber-500/40 dark:text-amber-300",
 };
 
 export function Badge({

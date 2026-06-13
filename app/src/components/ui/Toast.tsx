@@ -27,7 +27,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         {toasts.map((t) => (
           <div
             key={t.id}
-            className="rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-3 text-sm text-zinc-100 shadow-xl animate-[qp-fade-in_200ms_ease]"
+            className="rounded-lg border border-[var(--border-card)] bg-[var(--bg-surface)] px-4 py-3 text-sm text-[var(--text-primary)] shadow-xl animate-[qp-fade-in_200ms_ease]"
           >
             {t.message}
           </div>

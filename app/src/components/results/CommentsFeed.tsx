@@ -26,7 +26,7 @@ export function CommentsFeed({
   comments: PollResults["comments"];
 }) {
   if (comments.length === 0) {
-    return <p className="text-sm text-zinc-500">No comments yet</p>;
+    return <p className="text-sm text-[var(--text-muted)]">No comments yet</p>;
   }
 
   return (
@@ -34,18 +34,18 @@ export function CommentsFeed({
       {comments.map((c, i) => (
         <div
           key={i}
-          className="rounded-xl border border-zinc-800 bg-zinc-800/50 p-4"
+          className="rounded-xl border border-[var(--border-card)] bg-[var(--bg-elevated)] p-4"
         >
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-zinc-200">
+            <span className="text-sm font-medium text-[var(--text-primary)]">
               {c.alias ?? "Anonymous"}
             </span>
             <Badge tone="violet">{choiceLabel(poll, c)}</Badge>
-            <span className="ml-auto text-xs text-zinc-600">
+            <span className="ml-auto text-xs text-[var(--text-muted)]">
               {new Date(c.createdAt).toLocaleString()}
             </span>
           </div>
-          <p className="mt-2 text-sm text-zinc-400">{c.text}</p>
+          <p className="mt-2 text-sm text-[var(--text-secondary)]">{c.text}</p>
         </div>
       ))}
     </div>

@@ -21,7 +21,7 @@ export function Logo() {
           <rect x="15" y="12" width="2" height="3" rx="0.5" fill="white" />
         </svg>
       </span>
-      <span className="font-display text-lg font-bold tracking-tight text-zinc-50">
+      <span className="font-display text-lg font-bold tracking-tight text-[var(--text-primary)]">
         QuickPoll
       </span>
     </Link>

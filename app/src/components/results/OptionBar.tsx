@@ -19,11 +19,11 @@ export function OptionBar({
   return (
     <div className={isLeader ? "rounded-lg border-l-4 border-amber-500/80 pl-3" : ""}>
       <div className="mb-1.5 flex items-center justify-between gap-2">
-        <span className="flex items-center gap-2 text-sm font-medium text-zinc-200">
+        <span className="flex items-center gap-2 text-sm font-medium text-[var(--text-primary)]">
           {label}
           {isLeader && <Badge tone="gold">👑 Leading</Badge>}
         </span>
-        <span className="text-sm text-zinc-500">
+        <span className="text-sm text-[var(--text-secondary)]">
           {count} · {pct}%
         </span>
       </div>

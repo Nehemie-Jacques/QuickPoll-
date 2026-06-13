@@ -16,11 +16,11 @@ export function YesNo({
         className={`rounded-xl border-2 py-10 transition ${
           value === true
             ? "border-emerald-500 bg-emerald-500/10"
-            : "border-zinc-700 bg-zinc-900 hover:border-emerald-600/50"
+            : "border-[var(--border-card)] bg-[var(--bg-surface)] hover:border-emerald-600/50"
         }`}
       >
         <span className="text-3xl">👍</span>
-        <p className="mt-2 text-lg font-semibold text-emerald-400">Yes</p>
+        <p className="mt-2 text-lg font-semibold text-emerald-500 dark:text-emerald-400">Yes</p>
       </button>
       <button
         type="button"
@@ -28,11 +28,11 @@ export function YesNo({
         className={`rounded-xl border-2 py-10 transition ${
           value === false
             ? "border-red-500 bg-red-500/10"
-            : "border-zinc-700 bg-zinc-900 hover:border-red-600/50"
+            : "border-[var(--border-card)] bg-[var(--bg-surface)] hover:border-red-600/50"
         }`}
       >
         <span className="text-3xl">👎</span>
-        <p className="mt-2 text-lg font-semibold text-red-400">No</p>
+        <p className="mt-2 text-lg font-semibold text-red-500 dark:text-red-400">No</p>
       </button>
     </div>
   );

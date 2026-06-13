@@ -86,7 +86,7 @@ export function ResultsView({
         <Card className="mt-6">
           <h2 className="mb-4 flex items-center gap-2 font-display text-lg font-semibold">
             Voter comments
-            <span className="rounded-full bg-zinc-800 px-2 py-0.5 text-xs text-zinc-400">
+            <span className="rounded-full bg-[var(--bg-elevated)] px-2 py-0.5 text-xs text-[var(--text-secondary)]">
               {results.comments.length}
             </span>
           </h2>

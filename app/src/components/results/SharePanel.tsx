@@ -60,7 +60,7 @@ export function SharePanel({
         )}
       </div>
       {showEmbed && (
-        <pre className="overflow-x-auto rounded-lg bg-zinc-950 p-3 font-mono text-xs text-zinc-400">
+        <pre className="overflow-x-auto rounded-lg bg-[var(--bg-elevated)] p-3 font-mono text-xs text-[var(--text-secondary)]">
           {iframe}
         </pre>
       )}

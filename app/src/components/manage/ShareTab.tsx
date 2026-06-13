@@ -22,7 +22,7 @@ export function ShareTab({
         <iframe
           src={voteUrl}
           title="Vote widget preview"
-          className="h-64 w-full rounded-lg border border-zinc-700 bg-zinc-950"
+          className="h-64 w-full rounded-lg border border-[var(--border-card)] bg-[var(--bg-primary)]"
         />
       </Card>
     </div>

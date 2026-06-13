@@ -25,7 +25,7 @@ export function SingleChoice({
             className={`flex w-full items-center justify-between rounded-xl border px-4 py-4 text-left transition ${
               selected
                 ? "qp-option-selected"
-                : "border-zinc-700 bg-zinc-900 hover:bg-violet-600/5 hover:border-violet-600/50"
+                : "border-[var(--border-card)] bg-[var(--bg-surface)] hover:bg-violet-600/5 hover:border-violet-600/50"
             }`}
             style={
               selected
@@ -33,10 +33,10 @@ export function SingleChoice({
                 : undefined
             }
           >
-            <span className="font-medium text-zinc-100">{opt.label}</span>
+            <span className="font-medium text-[var(--text-primary)]">{opt.label}</span>
             <span
               className={`flex size-5 items-center justify-center rounded-full border-2 ${
-                selected ? "border-violet-500 bg-violet-600 text-white" : "border-zinc-600"
+                selected ? "border-violet-500 bg-violet-600 text-white" : "border-[var(--border-card)]"
               }`}
             >
               {selected && "✓"}

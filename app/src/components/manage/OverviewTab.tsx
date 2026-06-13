@@ -50,7 +50,7 @@ export function OverviewTab({
         ].map((s) => (
           <Card key={s.label} className="p-4 text-center">
             <p className="font-display text-2xl font-bold">{s.value}</p>
-            <p className="text-xs uppercase tracking-wider text-zinc-500">
+            <p className="text-xs uppercase tracking-wider text-[var(--text-muted)]">
               {s.label}
             </p>
           </Card>

@@ -25,7 +25,7 @@ export default async function ResultsPage({ params }: PageProps) {
       <div className="flex min-h-[50vh] items-center justify-center px-4">
         <Card className="max-w-md text-center">
           <h1 className="font-display text-xl font-bold">Results hidden</h1>
-          <p className="mt-2 text-sm text-zinc-500">
+          <p className="mt-2 text-sm text-[var(--text-muted)]">
             The creator will show results after the poll closes.
           </p>
           <Link href={`/poll/${id}`} className="mt-4 inline-block text-violet-400">

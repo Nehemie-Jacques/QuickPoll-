@@ -41,10 +41,10 @@ export function SuccessScreen({
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="rounded-xl border border-violet-500/40 bg-violet-600/10 p-4 text-left">
-          <p className="text-xs font-medium uppercase tracking-wider text-violet-300">
+          <p className="text-xs font-medium uppercase tracking-wider text-violet-600 dark:text-violet-300">
             Vote link
           </p>
-          <p className="font-mono mt-2 truncate text-xs text-zinc-300">{voteUrl}</p>
+          <p className="font-mono mt-2 truncate text-xs text-[var(--text-primary)]">{voteUrl}</p>
           <Button
             type="button"
             variant="ghost"
@@ -54,11 +54,11 @@ export function SuccessScreen({
             📋 Copy
           </Button>
         </div>
-        <div className="rounded-xl border border-zinc-700 bg-zinc-800/80 p-4 text-left">
-          <p className="flex items-center gap-1 text-xs font-medium uppercase tracking-wider text-zinc-400">
+        <div className="rounded-xl border border-[var(--border-card)] bg-[var(--bg-elevated)] p-4 text-left">
+          <p className="flex items-center gap-1 text-xs font-medium uppercase tracking-wider text-[var(--text-secondary)]">
             🔒 Creator link (keep private)
           </p>
-          <p className="font-mono mt-2 truncate text-xs text-zinc-400">{manageUrl}</p>
+          <p className="font-mono mt-2 truncate text-xs text-[var(--text-secondary)]">{manageUrl}</p>
           <Button
             type="button"
             variant="ghost"

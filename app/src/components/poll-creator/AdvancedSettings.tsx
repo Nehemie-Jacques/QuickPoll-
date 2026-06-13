@@ -30,14 +30,14 @@ export function AdvancedSettings({
   }
 
   return (
-    <div className="border-t border-zinc-800 pt-4">
+    <div className="border-t border-[var(--border-subtle)] pt-4">
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="flex w-full items-center justify-between text-sm font-medium text-zinc-300"
+        className="flex w-full items-center justify-between text-sm font-medium text-[var(--text-secondary)]"
       >
         Advanced settings
-        <span className="text-zinc-500">{open ? "▲" : "▼"}</span>
+        <span className="text-[var(--text-muted)]">{open ? "▲" : "▼"}</span>
       </button>
       {open && (
         <div className="mt-4 space-y-1">
@@ -96,7 +96,7 @@ function ExpirationExtras({
   if (type !== "multiple_choice") return null;
   return (
     <div className="pb-2">
-      <label className="text-xs text-zinc-500">Max choices</label>
+      <label className="text-xs text-[var(--text-secondary)]">Max choices</label>
       <Input
         type="number"
         min={2}

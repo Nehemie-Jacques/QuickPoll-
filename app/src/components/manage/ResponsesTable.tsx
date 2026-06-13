@@ -29,8 +29,8 @@ export function ResponsesTable({
     return (
       <Card className="py-16 text-center">
         <div className="mx-auto mb-4 size-16 rounded-2xl bg-violet-600/20" />
-        <p className="font-medium text-zinc-300">No votes yet</p>
-        <p className="mt-1 text-sm text-zinc-500">
+        <p className="font-medium text-[var(--text-secondary)]">No votes yet</p>
+        <p className="mt-1 text-sm text-[var(--text-muted)]">
           Share your poll to get started.
         </p>
       </Card>
@@ -46,9 +46,9 @@ export function ResponsesTable({
           </span>
         </a>
       </div>
-      <div className="overflow-x-auto rounded-xl border border-zinc-800">
+      <div className="overflow-x-auto rounded-xl border border-[var(--border-card)]">
         <table className="w-full text-left text-sm">
-          <thead className="bg-zinc-900 text-xs uppercase tracking-wider text-zinc-500">
+          <thead className="bg-[var(--bg-elevated)] text-xs uppercase tracking-wider text-[var(--text-muted)]">
             <tr>
               <th className="p-3">Time</th>
               <th className="p-3">Alias</th>
@@ -58,13 +58,13 @@ export function ResponsesTable({
           </thead>
           <tbody>
             {votes.map((v) => (
-              <tr key={v.voteId} className="border-t border-zinc-800">
-                <td className="p-3 text-zinc-400">
+              <tr key={v.voteId} className="border-t border-[var(--border-card)]">
+                <td className="p-3 text-[var(--text-secondary)]">
                   {new Date(v.createdAt).toLocaleString()}
                 </td>
                 <td className="p-3">{v.alias ?? "—"}</td>
                 <td className="p-3">{formatChoice(poll, v)}</td>
-                <td className="p-3 text-zinc-400">{v.comment ?? "—"}</td>
+                <td className="p-3 text-[var(--text-secondary)]">{v.comment ?? "—"}</td>
               </tr>
             ))}
           </tbody>

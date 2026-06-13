@@ -121,7 +121,7 @@ export function VoteForm({ poll: initialPoll }: { poll: VotePoll }) {
   return (
     <div className="mx-auto max-w-[560px] px-4 py-6">
       {alreadyVoted && (
-        <div className="mb-4 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+        <div className="mb-4 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-700 dark:text-amber-200">
           You already voted on this poll.
           {poll.settings.showResultsBeforeClose && (
             <Link
@@ -144,19 +144,19 @@ export function VoteForm({ poll: initialPoll }: { poll: VotePoll }) {
       >
         <div className="mb-6 flex flex-wrap items-center justify-between gap-2">
           <Badge tone="violet">{POLL_TYPE_LABELS[poll.type]}</Badge>
-          <span className="flex items-center gap-2 text-sm text-zinc-400">
+          <span className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
             <span className="qp-live-dot size-2 rounded-full bg-emerald-500" />
             {poll.totalVotes} votes
           </span>
         </div>
 
-        <h1 className="font-display text-2xl font-bold text-zinc-50">{poll.title}</h1>
+        <h1 className="font-display text-2xl font-bold text-[var(--text-primary)]">{poll.title}</h1>
         {poll.description && (
-          <p className="mt-2 text-zinc-400">{poll.description}</p>
+          <p className="mt-2 text-[var(--text-secondary)]">{poll.description}</p>
         )}
         {timeLeft && (
           <p
-            className={`mt-3 flex items-center gap-1 text-sm ${urgent ? "text-amber-400" : "text-zinc-500"}`}
+            className={`mt-3 flex items-center gap-1 text-sm ${urgent ? "text-amber-600 dark:text-amber-400" : "text-[var(--text-muted)]"}`}
           >
             🕐 {timeLeft}
           </p>
@@ -178,7 +178,7 @@ export function VoteForm({ poll: initialPoll }: { poll: VotePoll }) {
 
           {poll.settings.requireAlias && (
             <div>
-              <label className="text-xs text-zinc-500">👤 Your name *</label>
+              <label className="text-xs text-[var(--text-secondary)]">👤 Your name *</label>
               <Input
                 className="mt-1"
                 value={alias}
@@ -189,7 +189,7 @@ export function VoteForm({ poll: initialPoll }: { poll: VotePoll }) {
           )}
           {!poll.settings.requireAlias && (
             <div>
-              <label className="text-xs text-zinc-500">👤 Your name (optional)</label>
+              <label className="text-xs text-[var(--text-secondary)]">👤 Your name (optional)</label>
               <Input
                 className="mt-1"
                 value={alias}
@@ -199,7 +199,7 @@ export function VoteForm({ poll: initialPoll }: { poll: VotePoll }) {
           )}
           {poll.settings.allowComments && (
             <div>
-              <label className="text-xs text-zinc-500">Comment (optional)</label>
+              <label className="text-xs text-[var(--text-secondary)]">Comment (optional)</label>
               <Textarea
                 className="mt-1"
                 rows={2}
