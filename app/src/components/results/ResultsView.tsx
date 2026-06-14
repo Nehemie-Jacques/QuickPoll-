@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { PageContainer } from "@/components/layout/PageContainer";
 import type { Poll, PollResults } from "@/types/poll";
 import { computePollStatus } from "@/lib/poll-status";
 import { POLL_TYPE_LABELS } from "@/lib/poll-labels";
@@ -16,12 +17,10 @@ export function ResultsView({
   pollId,
   initialPoll,
   initialResults,
-  voteUrl,
 }: {
   pollId: string;
   initialPoll: Poll;
   initialResults: PollResults;
-  voteUrl: string;
 }) {
   const [poll, setPoll] = useState(initialPoll);
   const [results, setResults] = useState(initialResults);
@@ -59,7 +58,7 @@ export function ResultsView({
   }, [poll, results]);
 
   return (
-    <div className="mx-auto w-full max-w-[680px] px-4 py-8 sm:px-6">
+    <PageContainer size="lg">
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="font-display text-2xl font-bold">{poll.title}</h1>
@@ -96,8 +95,8 @@ export function ResultsView({
 
       <Card className="mt-6">
         <h2 className="mb-4 font-display text-lg font-semibold">Share this poll</h2>
-        <SharePanel pollId={pollId} voteUrl={voteUrl} />
+        <SharePanel pollId={pollId} />
       </Card>
-    </div>
+    </PageContainer>
   );
 }

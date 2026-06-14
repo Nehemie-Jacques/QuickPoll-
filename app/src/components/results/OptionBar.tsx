@@ -18,12 +18,12 @@ export function OptionBar({
 
   return (
     <div className={isLeader ? "rounded-lg border-l-4 border-amber-500/80 pl-3" : ""}>
-      <div className="mb-1.5 flex items-center justify-between gap-2">
-        <span className="flex items-center gap-2 text-sm font-medium text-[var(--text-primary)]">
-          {label}
-          {isLeader && <Badge tone="gold">👑 Leading</Badge>}
+      <div className="mb-1.5 flex min-w-0 items-center justify-between gap-2">
+        <span className="flex min-w-0 items-center gap-2 text-sm font-medium text-[var(--text-primary)]">
+          <span className="truncate">{label}</span>
+          {isLeader && <Badge tone="gold" className="shrink-0">👑 Leading</Badge>}
         </span>
-        <span className="text-sm text-[var(--text-secondary)]">
+        <span className="shrink-0 text-sm text-[var(--text-secondary)]">
           {count} · {pct}%
         </span>
       </div>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPollResolved, isPollOpen } from "@/lib/poll-status";
 import { VoteForm } from "@/components/voting/VoteForm";
+import { PageContainer } from "@/components/layout/PageContainer";
 import { Card } from "@/components/ui/Card";
 
 type PageProps = { params: Promise<{ id: string }> };
@@ -24,8 +25,8 @@ export default async function VotePage({ params }: PageProps) {
 
   if (!open) {
     return (
-      <div className="flex min-h-[50vh] items-center justify-center px-4">
-        <Card className="max-w-md text-center">
+      <PageContainer size="md" className="flex min-h-[50vh] items-center justify-center">
+        <Card className="w-full text-center">
           <div className="text-5xl">🕐</div>
           <h1 className="font-display mt-4 text-xl font-bold">
             This poll has {poll.status === "expired" ? "expired" : "closed"}
@@ -40,7 +41,7 @@ export default async function VotePage({ params }: PageProps) {
             </Link>
           )}
         </Card>
-      </div>
+      </PageContainer>
     );
   }
 

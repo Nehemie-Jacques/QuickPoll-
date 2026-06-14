@@ -1,6 +1,5 @@
 import { ManageDashboard } from "@/components/manage/ManageDashboard";
 import { ManageGate } from "@/components/manage/ManageGate";
-import { voteUrl } from "@/lib/urls";
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -15,7 +14,5 @@ export default async function ManagePage({ params, searchParams }: PageProps) {
     return <ManageGate />;
   }
 
-  return (
-    <ManageDashboard pollId={id} token={token} voteUrl={voteUrl(id)} />
-  );
+  return <ManageDashboard pollId={id} token={token} />;
 }

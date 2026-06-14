@@ -4,7 +4,11 @@ function stripTrailingSlash(url: string): string {
   return url.replace(/\/$/, "");
 }
 
-/** Canonical public base URL for share links (vote, QR, embed). */
+function isLocalHostname(hostname: string): boolean {
+  return hostname === "localhost" || hostname === "127.0.0.1";
+}
+
+/** Runtime origin (manage links, same-environment navigation). */
 export function getBaseUrl(request?: Request): string {
   if (process.env.NEXT_PUBLIC_APP_URL) {
     return stripTrailingSlash(process.env.NEXT_PUBLIC_APP_URL);
@@ -12,13 +16,12 @@ export function getBaseUrl(request?: Request): string {
 
   if (request) {
     const host =
-      request.headers.get("x-forwarded-host") ??
-      request.headers.get("host");
+      request.headers.get("x-forwarded-host") ?? request.headers.get("host");
     if (host) {
       const proto =
         request.headers.get("x-forwarded-proto")?.split(",")[0] ?? "https";
       const hostname = host.split(",")[0]?.trim();
-      if (hostname && !hostname.startsWith("localhost")) {
+      if (hostname) {
         return `${proto}://${hostname}`;
       }
     }
@@ -38,8 +41,57 @@ export function getBaseUrl(request?: Request): string {
   return "http://localhost:3000";
 }
 
+/** Always shareable base URL for vote links and QR codes (never localhost). */
+export function getShareBaseUrl(request?: Request): string {
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    return stripTrailingSlash(process.env.NEXT_PUBLIC_APP_URL);
+  }
+
+  if (request) {
+    const host =
+      request.headers.get("x-forwarded-host") ?? request.headers.get("host");
+    if (host) {
+      const proto =
+        request.headers.get("x-forwarded-proto")?.split(",")[0] ?? "https";
+      const hostname = host.split(",")[0]?.trim();
+      if (hostname && !isLocalHostname(hostname)) {
+        return `${proto}://${hostname}`;
+      }
+    }
+  }
+
+  if (process.env.VERCEL_ENV === "production") {
+    if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+      return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+    }
+    return PRODUCTION_URL;
+  }
+
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+
+  return PRODUCTION_URL;
+}
+
 export function voteUrl(pollId: string, request?: Request): string {
-  return `${getBaseUrl(request)}/poll/${pollId}`;
+  return `${getShareBaseUrl(request)}/poll/${pollId}`;
+}
+
+/** Client-side public vote URL — safe to copy, share, and encode in QR codes. */
+export function clientVoteUrl(pollId: string): string {
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    return `${stripTrailingSlash(process.env.NEXT_PUBLIC_APP_URL)}/poll/${pollId}`;
+  }
+
+  if (typeof window !== "undefined") {
+    const { hostname, origin } = window.location;
+    if (!isLocalHostname(hostname)) {
+      return `${origin}/poll/${pollId}`;
+    }
+  }
+
+  return `${PRODUCTION_URL}/poll/${pollId}`;
 }
 
 export function manageUrl(
@@ -51,27 +103,17 @@ export function manageUrl(
 }
 
 export function resultsUrl(pollId: string, request?: Request): string {
-  return `${getBaseUrl(request)}/poll/${pollId}/results`;
+  return `${getShareBaseUrl(request)}/poll/${pollId}/results`;
 }
 
 export function qrImageUrl(pollId: string, request?: Request): string {
-  return `${getBaseUrl(request)}/api/polls/${pollId}/qr`;
+  return `${getShareBaseUrl(request)}/api/polls/${pollId}/qr`;
 }
 
-/** Client-side: always use current origin for public vote links when possible. */
-export function resolvePublicVoteUrl(pollId: string, serverUrl: string): string {
-  if (typeof window === "undefined") return serverUrl;
-
-  try {
-    const parsed = new URL(serverUrl);
-    const isLocal =
-      parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1";
-    if (isLocal) {
-      return `${window.location.origin}/poll/${pollId}`;
-    }
-  } catch {
-    return `${window.location.origin}/poll/${pollId}`;
-  }
-
-  return serverUrl;
+/** @deprecated Use clientVoteUrl(pollId) */
+export function resolvePublicVoteUrl(
+  pollId: string,
+  _serverUrl?: string,
+): string {
+  return clientVoteUrl(pollId);
 }

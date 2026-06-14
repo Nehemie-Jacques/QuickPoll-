@@ -31,7 +31,7 @@ export function ActivityChart({
   );
 
   return (
-    <div className="h-52 w-full rounded-xl border border-[var(--border-card)] bg-[var(--bg-elevated)] p-2">
+    <div className="h-52 min-w-0 w-full overflow-hidden rounded-xl border border-[var(--border-card)] bg-[var(--bg-elevated)] p-2">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={cumulative}>
           <defs>

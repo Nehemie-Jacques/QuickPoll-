@@ -2,8 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPollResults } from "@/lib/dynamodb/polls";
 import { computePollStatus, getPollResolved } from "@/lib/poll-status";
-import { voteUrl } from "@/lib/urls";
 import { ResultsView } from "@/components/results/ResultsView";
+import { PageContainer } from "@/components/layout/PageContainer";
 import { Card } from "@/components/ui/Card";
 
 type PageProps = { params: Promise<{ id: string }> };
@@ -22,8 +22,8 @@ export default async function ResultsPage({ params }: PageProps) {
 
   if (!canShow) {
     return (
-      <div className="flex min-h-[50vh] items-center justify-center px-4">
-        <Card className="max-w-md text-center">
+      <PageContainer size="md" className="flex min-h-[50vh] items-center justify-center">
+        <Card className="w-full text-center">
           <h1 className="font-display text-xl font-bold">Results hidden</h1>
           <p className="mt-2 text-sm text-[var(--text-muted)]">
             The creator will show results after the poll closes.
@@ -32,7 +32,7 @@ export default async function ResultsPage({ params }: PageProps) {
             Back to poll
           </Link>
         </Card>
-      </div>
+      </PageContainer>
     );
   }
 
@@ -43,7 +43,6 @@ export default async function ResultsPage({ params }: PageProps) {
       pollId={id}
       initialPoll={poll}
       initialResults={results}
-      voteUrl={voteUrl(id)}
     />
   );
 }

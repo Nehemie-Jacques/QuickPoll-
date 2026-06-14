@@ -9,7 +9,7 @@ export function YesNo({
   onChange: (v: boolean) => void;
 }) {
   return (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid grid-cols-2 gap-2 sm:gap-4">
       <button
         type="button"
         onClick={() => onChange(true)}

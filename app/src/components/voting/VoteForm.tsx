@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { Poll, PollType } from "@/types/poll";
+import { PageContainer } from "@/components/layout/PageContainer";
 import { POLL_TYPE_LABELS } from "@/lib/poll-labels";
 import { formatTimeRemaining, isUrgent } from "@/lib/time-remaining";
 import { Badge } from "@/components/ui/Badge";
@@ -59,22 +60,26 @@ export function VoteForm({ poll: initialPoll }: { poll: VotePoll }) {
 
   if (!unlocked) {
     return (
-      <PasswordGate
-        onUnlock={(p) => {
-          setPassword(p);
-          setUnlocked(true);
-        }}
-      />
+      <PageContainer size="md">
+        <PasswordGate
+          onUnlock={(p) => {
+            setPassword(p);
+            setUnlocked(true);
+          }}
+        />
+      </PageContainer>
     );
   }
 
   if (done) {
     return (
-      <VoteConfirmation
-        pollId={poll.id}
-        showResults={poll.settings.showResultsBeforeClose}
-        accentColor={poll.accentColor}
-      />
+      <PageContainer size="md">
+        <VoteConfirmation
+          pollId={poll.id}
+          showResults={poll.settings.showResultsBeforeClose}
+          accentColor={poll.accentColor}
+        />
+      </PageContainer>
     );
   }
 
@@ -119,7 +124,7 @@ export function VoteForm({ poll: initialPoll }: { poll: VotePoll }) {
   }
 
   return (
-    <div className="mx-auto w-full max-w-[560px] px-4 py-6 sm:px-6">
+    <PageContainer size="md">
       {alreadyVoted && (
         <div className="mb-4 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-700 dark:text-amber-200">
           You already voted on this poll.
@@ -135,7 +140,7 @@ export function VoteForm({ poll: initialPoll }: { poll: VotePoll }) {
       )}
 
       <Card
-        className={`overflow-hidden ${shake ? "qp-shake" : ""}`}
+        className={`min-w-0 overflow-hidden ${shake ? "qp-shake" : ""}`}
         style={{
           borderTopWidth: 4,
           borderTopColor: poll.accentColor,
@@ -228,7 +233,7 @@ export function VoteForm({ poll: initialPoll }: { poll: VotePoll }) {
           </Button>
         </form>
       </Card>
-    </div>
+    </PageContainer>
   );
 }
 

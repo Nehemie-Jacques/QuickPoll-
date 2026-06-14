@@ -50,14 +50,16 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body
-        className="qp-shell flex min-h-full flex-col text-[var(--text-primary)]"
+        className="qp-shell flex min-h-full flex-col overflow-x-clip text-[var(--text-primary)]"
         suppressHydrationWarning
       >
         <div className="qp-bg-mesh" aria-hidden />
         <ToastProvider>
-          <SiteHeader />
-          <main className="qp-main flex-1 qp-animate-in">{children}</main>
-          <SiteFooter />
+          <div className="relative z-10 flex min-h-full min-w-0 flex-1 flex-col">
+            <SiteHeader />
+            <main className="qp-main flex-1">{children}</main>
+            <SiteFooter />
+          </div>
         </ToastProvider>
       </body>
     </html>

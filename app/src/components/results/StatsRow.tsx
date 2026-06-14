@@ -51,8 +51,8 @@ function StatCard({
       <span className="text-xl">{icon}</span>
       <motion.p
         key={value}
-        initial={{ scale: 1.1 }}
-        animate={{ scale: 1 }}
+        initial={{ opacity: 0.6 }}
+        animate={{ opacity: 1 }}
         className={`mt-2 font-display font-bold text-[var(--text-primary)] ${small ? "truncate text-sm" : "text-2xl"}`}
       >
         {value}

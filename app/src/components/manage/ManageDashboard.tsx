@@ -14,11 +14,9 @@ import { DangerZone } from "./DangerZone";
 export function ManageDashboard({
   pollId,
   token,
-  voteUrl,
 }: {
   pollId: string;
   token: string;
-  voteUrl: string;
 }) {
   const [poll, setPoll] = useState<Poll | null>(null);
   const [votes, setVotes] = useState<Vote[]>([]);
@@ -52,7 +50,11 @@ export function ManageDashboard({
   const exportUrl = `/api/polls/${pollId}/export?token=${encodeURIComponent(token)}`;
 
   if (loading) {
-    return <Skeleton className="mx-auto mt-20 h-64 max-w-4xl rounded-2xl" />;
+    return (
+      <div className="mx-auto w-full min-w-0 max-w-5xl px-4 sm:px-6">
+        <Skeleton className="mt-20 h-64 w-full rounded-2xl" />
+      </div>
+    );
   }
 
   if (error || !poll || !results) {
@@ -78,9 +80,7 @@ export function ManageDashboard({
         responses={
           <ResponsesTable poll={poll} votes={votes} exportUrl={exportUrl} />
         }
-        share={
-          <ShareTab pollId={pollId} voteUrl={voteUrl} exportUrl={exportUrl} />
-        }
+        share={<ShareTab pollId={pollId} exportUrl={exportUrl} />}
         danger={
           <DangerZone
             pollId={pollId}

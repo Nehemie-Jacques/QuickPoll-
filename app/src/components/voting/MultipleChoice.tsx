@@ -35,9 +35,9 @@ export function MultipleChoice({
                 : "border-[var(--border-card)] bg-[var(--bg-surface)] hover:bg-violet-600/5"
             }`}
           >
-            <span className="font-medium text-[var(--text-primary)]">{opt.label}</span>
+            <span className="min-w-0 truncate font-medium text-[var(--text-primary)]">{opt.label}</span>
             <span
-              className={`flex size-5 items-center justify-center rounded border ${
+              className={`flex size-5 shrink-0 items-center justify-center rounded border ${
                 selected ? "border-violet-500 bg-violet-600 text-white" : "border-[var(--border-card)]"
               }`}
             >

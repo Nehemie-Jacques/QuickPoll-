@@ -8,7 +8,7 @@ interface CardProps {
 
 export function Card({ children, className = "", style }: CardProps) {
   return (
-    <div className={`qp-card qp-card-hover p-6 ${className}`} style={style}>
+    <div className={`qp-card qp-card-hover w-full min-w-0 p-6 ${className}`} style={style}>
       {children}
     </div>
   );

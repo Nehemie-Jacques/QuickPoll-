@@ -1,22 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";
+import { clientVoteUrl } from "@/lib/urls";
 import { QRModal } from "./QRModal";
 
 export function SharePanel({
   pollId,
-  voteUrl,
   exportUrl,
 }: {
   pollId: string;
-  voteUrl: string;
   exportUrl?: string;
 }) {
   const { show } = useToast();
   const [qrOpen, setQrOpen] = useState(false);
   const [showEmbed, setShowEmbed] = useState(false);
+
+  const voteUrl = useMemo(() => clientVoteUrl(pollId), [pollId]);
 
   const iframe = `<iframe src="${voteUrl}" width="100%" height="400" frameborder="0"></iframe>`;
   const twitter = `https://twitter.com/intent/tweet?text=${encodeURIComponent(voteUrl)}`;
@@ -28,7 +29,10 @@ export function SharePanel({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="min-w-0 space-y-4">
+      <div className="min-w-0 max-w-full overflow-hidden rounded-lg bg-[var(--bg-elevated)] p-3">
+        <p className="qp-url-text font-mono text-xs text-[var(--text-secondary)]">{voteUrl}</p>
+      </div>
       <div className="flex flex-wrap gap-2">
         <Button variant="secondary" type="button" onClick={() => copy(voteUrl, "Link")}>
           Copy link
@@ -60,11 +64,11 @@ export function SharePanel({
         )}
       </div>
       {showEmbed && (
-        <pre className="overflow-x-auto rounded-lg bg-[var(--bg-elevated)] p-3 font-mono text-xs text-[var(--text-secondary)]">
+        <pre className="qp-url-text max-w-full overflow-x-auto rounded-lg bg-[var(--bg-elevated)] p-3 font-mono text-xs text-[var(--text-secondary)]">
           {iframe}
         </pre>
       )}
-      <QRModal pollId={pollId} voteUrl={voteUrl} open={qrOpen} onOpenChange={setQrOpen} />
+      <QRModal pollId={pollId} open={qrOpen} onOpenChange={setQrOpen} />
     </div>
   );
 }

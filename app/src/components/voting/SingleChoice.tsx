@@ -33,9 +33,9 @@ export function SingleChoice({
                 : undefined
             }
           >
-            <span className="font-medium text-[var(--text-primary)]">{opt.label}</span>
+            <span className="min-w-0 truncate font-medium text-[var(--text-primary)]">{opt.label}</span>
             <span
-              className={`flex size-5 items-center justify-center rounded-full border-2 ${
+              className={`flex size-5 shrink-0 items-center justify-center rounded-full border-2 ${
                 selected ? "border-violet-500 bg-violet-600 text-white" : "border-[var(--border-card)]"
               }`}
             >

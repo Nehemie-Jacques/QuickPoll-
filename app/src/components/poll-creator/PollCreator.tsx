@@ -14,6 +14,7 @@ import {
   type AdvancedSettingsState,
 } from "./AdvancedSettings";
 import { SuccessScreen } from "./SuccessScreen";
+import { PageContainer } from "@/components/layout/PageContainer";
 
 const ACCENTS = ["#7C3AED", "#2563EB", "#EC4899", "#14B8A6", "#F97316"];
 
@@ -106,23 +107,25 @@ export function PollCreator() {
 
   if (success) {
     return (
-      <SuccessScreen
-        pollId={success.pollId}
-        voteUrl={success.voteUrl}
-        manageUrl={success.manageUrl}
-        onReset={() => {
-          setSuccess(null);
-          setTitle("");
-          setDescription("");
-          setOptions(["", ""]);
-          setAdvanced(defaultAdvanced);
-        }}
-      />
+      <PageContainer size="md">
+        <SuccessScreen
+          pollId={success.pollId}
+          voteUrl={success.voteUrl}
+          manageUrl={success.manageUrl}
+          onReset={() => {
+            setSuccess(null);
+            setTitle("");
+            setDescription("");
+            setOptions(["", ""]);
+            setAdvanced(defaultAdvanced);
+          }}
+        />
+      </PageContainer>
     );
   }
 
   return (
-    <div className="qp-page max-w-[640px]">
+    <PageContainer size="md">
       <section className="mb-8 text-center sm:mb-10">
         <Badge tone="violet" className="mb-4">
           No account required
@@ -136,8 +139,8 @@ export function PollCreator() {
         </p>
       </section>
 
-      <form onSubmit={handleSubmit}>
-        <Card className="space-y-8">
+      <form onSubmit={handleSubmit} className="min-w-0">
+        <Card className="min-w-0 space-y-8">
           <div>
             <p className="mb-3 text-xs font-medium uppercase tracking-wider text-[var(--text-label)]">
               Poll type
@@ -214,6 +217,6 @@ export function PollCreator() {
           </div>
         </Card>
       </form>
-    </div>
+    </PageContainer>
   );
 }
