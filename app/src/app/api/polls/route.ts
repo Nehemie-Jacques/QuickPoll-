@@ -23,8 +23,8 @@ export async function POST(request: Request) {
       {
         pollId: poll.id,
         creatorToken,
-        voteUrl: voteUrl(poll.id),
-        manageUrl: manageUrl(poll.id, creatorToken),
+        voteUrl: voteUrl(poll.id, request),
+        manageUrl: manageUrl(poll.id, creatorToken, request),
         poll: serializePoll(poll),
       },
       { status: 201 },

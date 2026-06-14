@@ -50,7 +50,7 @@ export async function POST(request: Request, context: RouteContext) {
       notifyFirstVote(
         poll.settings.notifyEmail,
         poll.title,
-        manageUrl(poll.id, token),
+        manageUrl(poll.id, token, request),
       ).catch(console.error);
     }
 

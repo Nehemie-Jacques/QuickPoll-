@@ -64,7 +64,7 @@ export function SharePanel({
           {iframe}
         </pre>
       )}
-      <QRModal pollId={pollId} open={qrOpen} onOpenChange={setQrOpen} />
+      <QRModal pollId={pollId} voteUrl={voteUrl} open={qrOpen} onOpenChange={setQrOpen} />
     </div>
   );
 }
