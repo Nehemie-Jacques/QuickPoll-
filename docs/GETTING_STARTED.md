@@ -4,6 +4,8 @@ Ce guide détaillé décrit pas à pas les étapes de configuration et de lancem
 
 Le projet est disponible en open source sur GitHub : [https://github.com/Nehemie-Jacques/QuickPoll-](https://github.com/Nehemie-Jacques/QuickPoll-)
 
+**Démo en ligne** : [https://quick-poll-ba18.vercel.app/](https://quick-poll-ba18.vercel.app/)
+
 ---
 
 ## 📋 Table des Matières

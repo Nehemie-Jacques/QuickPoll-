@@ -6,6 +6,10 @@ QuickPoll est une application web moderne, légère et performante permettant de
 
 Le projet est disponible en open source sur GitHub : [https://github.com/Nehemie-Jacques/QuickPoll-](https://github.com/Nehemie-Jacques/QuickPoll-)
 
+Démo en direct : [https://quick-poll-ba18.vercel.app/](https://quick-poll-ba18.vercel.app/)
+
+> **Note** : en production sur Vercel, définissez `NEXT_PUBLIC_APP_URL=https://quick-poll-ba18.vercel.app` pour que les liens de vote et les QR codes pointent vers l'URL publique (et non `localhost`).
+
 ---
 
 ## 🌟 Fonctionnalités Principales
