@@ -25,6 +25,17 @@ export const metadata: Metadata = {
   title: "QuickPoll — Create polls. Share instantly. See results live.",
   description:
     "Create polls. Share instantly. See results live. No account required.",
+  metadataBase: new URL("https://quick-poll-ba18.vercel.app"),
+  icons: {
+    icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
+    apple: [{ url: "/favicon.svg", type: "image/svg+xml" }],
+  },
+  openGraph: {
+    title: "QuickPoll",
+    description: "Create polls. Share instantly. See results live.",
+    url: "https://quick-poll-ba18.vercel.app",
+    siteName: "QuickPoll",
+  },
 };
 
 export default function RootLayout({
@@ -39,12 +50,13 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body
-        className="flex min-h-full flex-col bg-[var(--bg-primary)] text-[var(--text-primary)]"
+        className="qp-shell flex min-h-full flex-col text-[var(--text-primary)]"
         suppressHydrationWarning
       >
+        <div className="qp-bg-mesh" aria-hidden />
         <ToastProvider>
           <SiteHeader />
-          <main className="flex-1 qp-animate-in">{children}</main>
+          <main className="qp-main flex-1 qp-animate-in">{children}</main>
           <SiteFooter />
         </ToastProvider>
       </body>
