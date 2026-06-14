@@ -122,15 +122,16 @@ export function PollCreator() {
   }
 
   return (
-    <div className="mx-auto max-w-[640px] px-4 pb-16">
-      <section className="mb-8 text-center">
+    <div className="qp-page max-w-[640px]">
+      <section className="mb-8 text-center sm:mb-10">
         <Badge tone="violet" className="mb-4">
-          ✦ No account required
+          No account required
         </Badge>
-        <h1 className="font-display text-4xl font-bold tracking-tight text-[var(--text-primary)] sm:text-5xl">
-          Create a poll in seconds
+        <h1 className="font-display text-[clamp(1.75rem,5vw,3rem)] font-bold leading-[1.1] tracking-tight">
+          Create a poll{" "}
+          <span className="qp-gradient-text">in seconds</span>
         </h1>
-        <p className="mt-3 text-[var(--text-secondary)]">
+        <p className="mx-auto mt-4 max-w-md text-base text-[var(--text-secondary)]">
           Share the link. Get instant results. No sign-up needed.
         </p>
       </section>

@@ -21,7 +21,7 @@ export function PollTypeSelector({
   onChange: (t: PollType) => void;
 }) {
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
       {TYPES.map((t) => {
         const selected = value === t.value;
         return (

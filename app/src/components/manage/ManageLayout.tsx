@@ -25,7 +25,7 @@ export function ManageLayout({
     status === "active" ? "live" : status === "expired" ? "warning" : "muted";
 
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-8 px-4 py-8 lg:flex-row">
+    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-6 sm:gap-8 sm:px-6 sm:py-8 lg:flex-row">
       <aside className="w-full shrink-0 lg:w-60">
         <Badge tone={statusTone} className="mb-4">
           {status}
